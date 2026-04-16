@@ -97,8 +97,45 @@ struct ScanIdleView: View {
             .padding(Theme.Spacing.lg)
     }
 
+    /// Fills the viewfinder card while the camera is not yet authorized or isn't
+    /// available (simulator). Apothecary art as a blurred warm backdrop, a big
+    /// scanning Bamboo in the center, helpful copy, and a sage dashed reticle so
+    /// the composition still reads as a scanner rather than an empty gray box.
     private var placeholderTint: some View {
-        Theme.Color.forest.opacity(0.08)
+        ZStack {
+            Image("Scenes/Apothecary")
+                .resizable()
+                .scaledToFill()
+                .blur(radius: 18)
+                .opacity(0.55)
+                .overlay(
+                    LinearGradient(
+                        colors: [Theme.Color.background.opacity(0.2), Theme.Color.background.opacity(0.55)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+            VStack(spacing: Theme.Spacing.md) {
+                MascotBadge(.scanning, size: 160)
+
+                VStack(spacing: Theme.Spacing.xxs) {
+                    Text("Point at any plant")
+                        .font(Theme.Font.headline)
+                        .foregroundStyle(Theme.Color.textPrimary)
+                    Text("We'll identify it in a second.")
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(Theme.Color.textSecondary)
+                }
+            }
+
+            RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous)
+                .strokeBorder(
+                    Theme.Color.sage.opacity(0.9),
+                    style: StrokeStyle(lineWidth: 2, dash: [8, 6])
+                )
+                .padding(Theme.Spacing.md)
+        }
     }
 
     private var permissionPrompt: some View {
