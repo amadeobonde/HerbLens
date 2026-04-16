@@ -5,7 +5,8 @@ import Foundation
 nonisolated enum MockServices {
     // MARK: - Auth
 
-    struct Auth: AuthService {
+    nonisolated struct Auth: AuthService {
+        nonisolated init() {}
         var currentUserID: String? { get async { SampleData.userID } }
 
         func signUp(email: String, password: String) async throws -> UserProfile { SampleData.userProfile }
@@ -16,39 +17,66 @@ nonisolated enum MockServices {
 
     // MARK: - Plants
 
-    struct Plants: PlantsRepository {
-        func featured() async throws -> [Plant] { [SampleData.chamomile] }
+    nonisolated struct Plants: PlantsRepository {
+        nonisolated init() {}
+        func featured() async throws -> [Plant] {
+            SampleData.plants.filter(\.featured)
+        }
 
         func plant(id: String) async throws -> Plant {
-            guard id == SampleData.chamomile.id else { throw MockError.notFound }
-            return SampleData.chamomile
+            guard let plant = SampleData.plants.first(where: { $0.id == id }) else {
+                throw MockError.notFound
+            }
+            return plant
         }
 
         func search(query: String) async throws -> [Plant] {
             let q = query.lowercased()
-            return [SampleData.chamomile].filter { $0.commonName.lowercased().contains(q) }
+            guard !q.isEmpty else { return SampleData.plants }
+            return SampleData.plants.filter { plant in
+                plant.commonName.lowercased().contains(q)
+                    || plant.alternateNames.contains(where: { $0.lowercased().contains(q) })
+                    || plant.tags.contains(where: { $0.lowercased().contains(q) })
+            }
         }
 
         func healthScore(for plantID: String, userID: String) async throws -> HealthScore {
-            SampleData.chamomile.healthScore
+            guard let plant = SampleData.plants.first(where: { $0.id == plantID }) else {
+                throw MockError.notFound
+            }
+            return plant.healthScore
         }
 
         func highlightCollections() async throws -> [HighlightCollection] {
-            [SampleData.highlightCollection]
+            SampleData.highlightCollections
         }
     }
 
     // MARK: - Scans
 
+    /// Always-quota-exceeded variant so feature instances can preview the paywall trigger.
+    /// Use in Previews by swapping `AppDependencies.mock.scans` with `MockServices.ScansOverQuota()`.
+    nonisolated struct ScansOverQuota: ScansRepository {
+        nonisolated init() {}
+        func identify(imageData: Data) async throws -> IdentifyResult {
+            throw ScanError.quotaExceeded(limit: 3)
+        }
+        func save(_ scan: Scan) async throws -> Scan { throw ScanError.quotaExceeded(limit: 3) }
+        func list(userID: String, sort: ScanSort, filter: ScanFilter) async throws -> [Scan] { SampleData.scans }
+        func toggleFavorite(scanID: String) async throws {}
+        func delete(scanID: String) async throws {}
+    }
+
     actor Scans: ScansRepository {
-        private var stored: [Scan] = [SampleData.scan]
+        init() {}
+        private var stored: [Scan] = SampleData.scans
 
         func identify(imageData: Data) async throws -> IdentifyResult {
             IdentifyResult(
                 plantID: SampleData.chamomile.id,
                 confidence: 0.94,
-                suggestedMatches: [SampleData.chamomile],
-                rawIdentification: "chamomile"
+                suggestedMatches: [SampleData.chamomile, SampleData.peppermint],
+                rawIdentification: "Chamomile (Matricaria chamomilla) — 94% confidence."
             )
         }
 
@@ -85,7 +113,9 @@ nonisolated enum MockServices {
 
     // MARK: - Chat
 
-    struct Chat: ChatRepository {
+    nonisolated struct Chat: ChatRepository {
+        nonisolated init() {}
+
         func conversations(userID: String) async throws -> [Conversation] {
             [SampleData.conversation]
         }
@@ -105,7 +135,7 @@ nonisolated enum MockServices {
             )
         }
 
-        func send(message: String, to conversationID: String) -> AsyncThrowingStream<String, Error> {
+        nonisolated func send(message: String, to conversationID: String) -> AsyncThrowingStream<String, Error> {
             AsyncThrowingStream { continuation in
                 let reply = "That's a good question about herbal remedies. This is mock output."
                 Task {
@@ -122,6 +152,7 @@ nonisolated enum MockServices {
     // MARK: - Subscriptions
 
     actor Subscriptions: SubscriptionService {
+        init() {}
         private var tier: SubscriptionTier = .free
 
         func currentTier() async -> SubscriptionTier { tier }
@@ -138,6 +169,7 @@ nonisolated enum MockServices {
     // MARK: - HealthProfile
 
     actor HealthProfileRepo: HealthProfileRepository {
+        init() {}
         private var stored: HealthProfile = SampleData.healthProfile
 
         func load(userID: String) async throws -> HealthProfile { stored }
