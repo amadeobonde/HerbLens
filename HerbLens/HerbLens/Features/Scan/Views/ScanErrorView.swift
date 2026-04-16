@@ -5,7 +5,7 @@ import SwiftUI
 /// dismiss closure regardless of retriability.
 struct ScanErrorView: View {
     let error: ScanDisplayError
-    let onDismiss: () -> Void
+    let onDismiss: @Sendable () -> Void
 
     var body: some View {
         ZStack(alignment: .bottom) {

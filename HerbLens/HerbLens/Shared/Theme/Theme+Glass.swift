@@ -24,7 +24,7 @@ public extension Theme {
 public extension View {
     /// Apply a Theme-defined Liquid Glass surface to this view.
     @ViewBuilder
-    func glass(_ role: Theme.Glass.Role) -> some View {
+    nonisolated func glass(_ role: Theme.Glass.Role) -> some View {
         switch role {
         case .navBar:
             self.glassEffect(.regular, in: .rect)

@@ -6,10 +6,10 @@ import SwiftUI
 struct ScanResultView: View {
     let result: ScanResult
     let tier: SubscriptionTier
-    let onSave: () -> Void
-    let onScanAnother: () -> Void
+    let onSave: @Sendable () -> Void
+    let onScanAnother: @Sendable () -> Void
     let onPickCandidate: (Plant) -> Void
-    let onOpenVault: (() -> Void)?
+    let onOpenVault: (@Sendable () -> Void)?
 
     var body: some View {
         ZStack(alignment: .bottom) {

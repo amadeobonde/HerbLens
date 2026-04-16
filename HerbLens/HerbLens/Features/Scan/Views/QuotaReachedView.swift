@@ -5,8 +5,8 @@ import SwiftUI
 /// hands off to the dedicated paywall flow.
 struct QuotaReachedView: View {
     let limit: Int
-    let onPaywall: () -> Void
-    let onDismiss: () -> Void
+    let onPaywall: @Sendable () -> Void
+    let onDismiss: @Sendable () -> Void
 
     var body: some View {
         ZStack(alignment: .bottom) {

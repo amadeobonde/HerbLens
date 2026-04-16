@@ -7,10 +7,10 @@ public struct ScanView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var viewModel: ScanViewModel?
 
-    public let onOpenVault: (() -> Void)?
-    public let onPaywall: () -> Void
+    public let onOpenVault: (@Sendable () -> Void)?
+    public let onPaywall: @Sendable () -> Void
 
-    public init(onOpenVault: (() -> Void)? = nil, onPaywall: @escaping () -> Void) {
+    public init(onOpenVault: (@Sendable () -> Void)? = nil, onPaywall: @escaping @Sendable () -> Void) {
         self.onOpenVault = onOpenVault
         self.onPaywall = onPaywall
     }
