@@ -1,0 +1,41 @@
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+build/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# SPM
+.build/
+
+# Secrets — never commit actual xcconfig files
+*.xcconfig
+!*.xcconfig.template
+
+# Supabase local runtime
+.supabase/
+
+# Environment
+.env
+.env.*
+
+# macOS
+.DS_Store
+._*
+.Trashes
+.Spotlight-V100
+
+# Misc
+*.swp
+*.swo
+*~

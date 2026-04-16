@@ -1,0 +1,356 @@
+{
+  "appSchema": {
+    "version": "1.0.0",
+    "appName": "HerbLens",
+    "tagline": "Scan. Learn. Brew.",
+    "appStoreSubtitle": "Herb Scanner & Tea Recipes | Tincture Maker | Medicinal Plant Identifier",
+    "description": "Snap a photo of any herb or medicinal plant and instantly get identification, health benefits matched to your goals, contraindications, and step-by-step tea and tincture recipes.",
+    "keywords": [
+      "herb scanner",
+      "plant scanner",
+      "herb identifier",
+      "medicinal plant",
+      "tea maker",
+      "tincture maker",
+      "herbal remedy",
+      "plant identifier",
+      "natural remedy",
+      "herbal tea recipe"
+    ]
+  },
+
+  "userProfile": {
+    "id": "string (uuid)",
+    "email": "string",
+    "displayName": "string",
+    "avatarUrl": "string | null",
+    "subscriptionTier": "free | premium",
+    "createdAt": "ISO 8601 datetime",
+    "updatedAt": "ISO 8601 datetime",
+    "onboardingCompleted": "boolean",
+    "healthProfile": {
+      "goals": [
+        {
+          "id": "string (uuid)",
+          "name": "string (e.g. 'Better Sleep', 'Digestive Health', 'Stress Relief', 'Immunity Boost', 'Skin Health', 'Pain Management', 'Energy', 'Focus')",
+          "priority": "integer (1 = highest)",
+          "addedAt": "ISO 8601 datetime"
+        }
+      ],
+      "allergies": ["string (e.g. 'ragweed', 'latex', 'pollen')"],
+      "medications": ["string (e.g. 'blood thinners', 'SSRIs', 'birth control')"],
+      "conditions": ["string (e.g. 'pregnant', 'breastfeeding', 'high blood pressure', 'diabetes')"],
+      "experienceLevel": "beginner | intermediate | advanced"
+    }
+  },
+
+  "plant": {
+    "id": "string (uuid)",
+    "commonName": "string",
+    "alternateNames": ["string"],
+    "origin": "string (e.g. 'Eastern Mediterranean')",
+    "regionsFound": ["string (e.g. 'North America', 'Southeast Asia', 'Europe')"],
+    "climates": ["tropical | temperate | arid | subarctic | mediterranean | subtropical"],
+    "growingConditions": "string | null (e.g. 'Prefers partial shade, moist well-drained soil')",
+    "imageUrl": "string",
+    "thumbnailUrl": "string",
+    "description": "string (short overview of the plant)",
+    "tags": ["string (e.g. 'calming', 'anti-inflammatory', 'digestive', 'adaptogen')"],
+    "category": "string (e.g. 'Herb', 'Root', 'Flower', 'Bark', 'Leaf', 'Berry', 'Mushroom')",
+    "featured": "boolean",
+    "accessTier": "free",
+    "healthScore": {
+      "_comment": "Computed per-user based on their health goals. Returned dynamically by the API when a user views a plant.",
+      "overallScore": "integer (0-100)",
+      "goalBreakdown": [
+        {
+          "goalName": "string (e.g. 'Better Sleep')",
+          "relevanceScore": "integer (0-100)",
+          "reason": "string (e.g. 'Contains apigenin, a compound known to promote relaxation')"
+        }
+      ],
+      "warnings": [
+        {
+          "type": "allergy | medication_interaction | condition",
+          "severity": "low | moderate | high",
+          "message": "string (e.g. 'May interact with blood thinners — consult your doctor')"
+        }
+      ]
+    },
+    "uses": [
+      {
+        "category": "string (e.g. 'Digestive', 'Respiratory', 'Skin', 'Immune', 'Nervous System', 'Musculoskeletal')",
+        "description": "string",
+        "accessTier": "free"
+      }
+    ],
+    "contraindications": [
+      {
+        "condition": "string (e.g. 'Pregnancy', 'Blood thinners', 'Liver disease')",
+        "details": "string",
+        "severity": "low | moderate | high"
+      }
+    ],
+    "recipes": [
+      {
+        "id": "string (uuid)",
+        "title": "string (e.g. 'Chamomile Sleep Tea')",
+        "type": "tea | tincture",
+        "difficulty": "beginner | intermediate | advanced",
+        "prepTime": "string (e.g. '10 minutes')",
+        "steepOrCureTime": "string | null (e.g. '5 minutes' for tea, '4-6 weeks' for tincture)",
+        "yield": "string (e.g. '1 cup' or '4 oz bottle')",
+        "accessTier": "premium",
+        "ingredients": [
+          {
+            "name": "string",
+            "amount": "string (e.g. '1 tbsp', '2 oz')",
+            "notes": "string | null (e.g. 'dried, not fresh')"
+          }
+        ],
+        "steps": [
+          {
+            "stepNumber": "integer",
+            "instruction": "string",
+            "tip": "string | null"
+          }
+        ],
+        "imageUrl": "string | null"
+      }
+    ],
+    "suggestedPrompts": [
+      "string (e.g. 'Can I take chamomile with melatonin?')",
+      "string (e.g. 'What are the side effects of chamomile?')",
+      "string (e.g. 'How often can I drink chamomile tea?')"
+    ],
+    "lastUpdated": "ISO 8601 datetime"
+  },
+
+  "vault": {
+    "_comment": "The Vault is the user's personal collection of scanned plants. Each scan is a navigable record with photo and results.",
+    "scans": [
+      {
+        "id": "string (uuid)",
+        "userId": "string (uuid)",
+        "photoUrl": "string",
+        "scannedAt": "ISO 8601 datetime",
+        "identifiedPlantId": "string (uuid) — references plant.id",
+        "confidenceScore": "float (0.0 - 1.0)",
+        "userNotes": "string | null",
+        "isFavorited": "boolean",
+        "healthScoreAtScan": "integer (0-100) — snapshot of health score at time of scan",
+        "accessTier": "free"
+      }
+    ],
+    "filters": {
+      "_comment": "Available filter/sort options for navigating the vault",
+      "sortBy": ["scannedAt", "healthScore", "commonName", "isFavorited"],
+      "filterBy": {
+        "category": ["Herb", "Root", "Flower", "Bark", "Leaf", "Berry", "Mushroom"],
+        "healthScoreRange": { "min": 0, "max": 100 },
+        "type": ["tea", "tincture"],
+        "isFavorited": "boolean"
+      }
+    }
+  },
+
+  "highlights": {
+    "_comment": "Curated collections displayed on the home screen or explore tab",
+    "collections": [
+      {
+        "id": "string (uuid)",
+        "title": "string (e.g. 'Sleep Aids')",
+        "subtitle": "string (e.g. 'Plants to help you wind down naturally')",
+        "coverImageUrl": "string",
+        "plantIds": ["string (uuid) — references plant.id"],
+        "displayOrder": "integer",
+        "accessTier": "free"
+      }
+    ]
+  },
+
+  "aiChat": {
+    "_comment": "AI Expert Chat feature — premium only. Conversation history stored per user.",
+    "accessTier": "premium",
+    "conversations": [
+      {
+        "id": "string (uuid)",
+        "userId": "string (uuid)",
+        "startedAt": "ISO 8601 datetime",
+        "lastMessageAt": "ISO 8601 datetime",
+        "contextPlantId": "string (uuid) | null — if chat was started from a plant page",
+        "messages": [
+          {
+            "id": "string (uuid)",
+            "role": "user | assistant",
+            "content": "string",
+            "timestamp": "ISO 8601 datetime"
+          }
+        ]
+      }
+    ]
+  },
+
+  "subscription": {
+    "tiers": {
+      "free": {
+        "name": "Free",
+        "features": [
+          "Unlimited plant photo scanning",
+          "Basic plant identification and info",
+          "Uses and benefits overview",
+          "Contraindication warnings",
+          "Personal vault with scan history",
+          "Health score per plant",
+          "Browse highlight collections"
+        ]
+      },
+      "premium": {
+        "name": "HerbLens Pro",
+        "price": "TBD",
+        "billingCycle": "monthly | yearly",
+        "trialDays": "integer (e.g. 7)",
+        "features": [
+          "Everything in Free",
+          "Step-by-step tea recipes",
+          "Step-by-step tincture recipes",
+          "AI Expert Chat — unlimited conversations",
+          "Advanced health score breakdowns with goal matching",
+          "Priority plant identification"
+        ]
+      }
+    }
+  },
+
+  "samplePlantEntry": {
+    "_comment": "Example of a fully populated plant entry for reference",
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "commonName": "Chamomile",
+    "alternateNames": ["German Chamomile", "Wild Chamomile", "Matricaria"],
+    "origin": "Western Europe and Western Asia",
+    "regionsFound": ["Europe", "North America", "Australia", "South America"],
+    "climates": ["temperate", "mediterranean"],
+    "growingConditions": "Full sun to partial shade, well-drained soil, tolerates poor soil",
+    "imageUrl": "https://cdn.herblens.app/plants/chamomile.jpg",
+    "thumbnailUrl": "https://cdn.herblens.app/plants/chamomile_thumb.jpg",
+    "description": "A gentle, daisy-like herb prized for centuries as a natural remedy for relaxation, digestive comfort, and skin health.",
+    "tags": ["calming", "digestive", "anti-inflammatory", "sleep", "skin"],
+    "category": "Flower",
+    "featured": true,
+    "accessTier": "free",
+    "healthScore": {
+      "_comment": "Example for a user whose goals are 'Better Sleep' and 'Stress Relief'",
+      "overallScore": 92,
+      "goalBreakdown": [
+        {
+          "goalName": "Better Sleep",
+          "relevanceScore": 95,
+          "reason": "Contains apigenin, a compound that binds to brain receptors to promote relaxation and drowsiness."
+        },
+        {
+          "goalName": "Stress Relief",
+          "relevanceScore": 88,
+          "reason": "Traditionally used to ease nervous tension. Studies show mild anxiolytic effects when consumed as tea."
+        }
+      ],
+      "warnings": [
+        {
+          "type": "allergy",
+          "severity": "high",
+          "message": "You listed ragweed as an allergy. Chamomile is in the same plant family (Asteraceae) and may trigger a reaction."
+        }
+      ]
+    },
+    "uses": [
+      {
+        "category": "Nervous System",
+        "description": "Widely used to promote relaxation and support restful sleep. Contains apigenin, which binds to brain receptors that reduce anxiety.",
+        "accessTier": "free"
+      },
+      {
+        "category": "Digestive",
+        "description": "Soothes upset stomach, reduces bloating, and may relieve symptoms of IBS and indigestion.",
+        "accessTier": "free"
+      },
+      {
+        "category": "Skin",
+        "description": "Applied topically to calm irritated skin, reduce redness, and support wound healing.",
+        "accessTier": "free"
+      }
+    ],
+    "contraindications": [
+      {
+        "condition": "Ragweed allergy",
+        "details": "Chamomile is in the same family as ragweed. People with ragweed allergies may experience allergic reactions.",
+        "severity": "high"
+      },
+      {
+        "condition": "Blood thinners",
+        "details": "Chamomile contains coumarin, which may increase the effect of anticoagulant medications.",
+        "severity": "moderate"
+      },
+      {
+        "condition": "Pregnancy",
+        "details": "Large amounts may stimulate uterine contractions. Small amounts in tea are generally considered safe, but consult your doctor.",
+        "severity": "moderate"
+      }
+    ],
+    "recipes": [
+      {
+        "id": "r1a2b3c4-d5e6-7890-abcd-ef1234567890",
+        "title": "Classic Chamomile Sleep Tea",
+        "type": "tea",
+        "difficulty": "beginner",
+        "prepTime": "5 minutes",
+        "steepOrCureTime": "5-7 minutes",
+        "yield": "1 cup",
+        "accessTier": "premium",
+        "ingredients": [
+          { "name": "Dried chamomile flowers", "amount": "1 tbsp", "notes": "Use whole flowers for best flavor" },
+          { "name": "Hot water", "amount": "8 oz", "notes": "Just below boiling, around 200°F" },
+          { "name": "Honey", "amount": "1 tsp", "notes": "Optional, to taste" },
+          { "name": "Lemon slice", "amount": "1", "notes": "Optional" }
+        ],
+        "steps": [
+          { "stepNumber": 1, "instruction": "Place dried chamomile flowers into a tea infuser or directly into your cup.", "tip": "A mesh ball infuser works great for loose flowers." },
+          { "stepNumber": 2, "instruction": "Heat water to just below boiling (about 200°F / 93°C).", "tip": "Boiling water can make the tea taste bitter." },
+          { "stepNumber": 3, "instruction": "Pour hot water over the chamomile and let steep for 5-7 minutes.", "tip": "Longer steeping = stronger flavor and more compounds extracted." },
+          { "stepNumber": 4, "instruction": "Remove the infuser or strain the flowers. Add honey and lemon if desired.", "tip": null },
+          { "stepNumber": 5, "instruction": "Drink 30-60 minutes before bed for best sleep benefits.", "tip": "Make it a nightly ritual to signal your body it's time to wind down." }
+        ],
+        "imageUrl": "https://cdn.herblens.app/recipes/chamomile_tea.jpg"
+      },
+      {
+        "id": "r2b3c4d5-e6f7-8901-bcde-f12345678901",
+        "title": "Chamomile Calming Tincture",
+        "type": "tincture",
+        "difficulty": "intermediate",
+        "prepTime": "15 minutes",
+        "steepOrCureTime": "4-6 weeks",
+        "yield": "4 oz",
+        "accessTier": "premium",
+        "ingredients": [
+          { "name": "Dried chamomile flowers", "amount": "1/2 cup", "notes": "Packed loosely" },
+          { "name": "High-proof vodka (80-100 proof)", "amount": "1 cup", "notes": "Must fully cover the flowers" },
+          { "name": "Glass jar with tight lid", "amount": "1", "notes": "Mason jar works well" }
+        ],
+        "steps": [
+          { "stepNumber": 1, "instruction": "Fill your glass jar about halfway with dried chamomile flowers.", "tip": "Don't pack too tightly — the alcohol needs to circulate." },
+          { "stepNumber": 2, "instruction": "Pour vodka over the flowers until they are fully submerged with about 1 inch of liquid above.", "tip": "Use 100-proof for a stronger extraction." },
+          { "stepNumber": 3, "instruction": "Seal the jar tightly and label it with the date.", "tip": null },
+          { "stepNumber": 4, "instruction": "Store in a cool, dark place for 4-6 weeks. Shake the jar gently every few days.", "tip": "A kitchen cabinet away from the stove works perfectly." },
+          { "stepNumber": 5, "instruction": "After 4-6 weeks, strain through cheesecloth into a dark dropper bottle.", "tip": "Squeeze the cheesecloth to get every last drop." },
+          { "stepNumber": 6, "instruction": "Take 1-2 dropperfuls (30-60 drops) in water or tea as needed.", "tip": "Start with a smaller dose to see how your body responds." }
+        ],
+        "imageUrl": "https://cdn.herblens.app/recipes/chamomile_tincture.jpg"
+      }
+    ],
+    "suggestedPrompts": [
+      "Can I take chamomile with melatonin?",
+      "Is chamomile safe for kids?",
+      "How often can I drink chamomile tea?",
+      "What's the difference between German and Roman chamomile?"
+    ],
+    "lastUpdated": "2026-04-15T00:00:00Z"
+  }
+}
