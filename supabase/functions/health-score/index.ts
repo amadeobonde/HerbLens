@@ -63,18 +63,24 @@ Deno.serve(async (req) => {
       )
     }
 
-    const [plantResult, profileResult] = await Promise.all([
+    const [plantResult, profileResult, userProfileResult] = await Promise.all([
       supabase.from("plants").select("*, plant_uses(*), plant_contraindications(*)").eq("id", plant_id).single(),
       supabase.from("health_profiles").select("*, health_goals(*)").eq("user_id", user.id).single(),
+      supabase.from("user_profiles").select("subscription_tier").eq("id", user.id).single(),
     ])
 
     if (plantResult.error) throw plantResult.error
 
     const plant = plantResult.data
     const healthProfile = profileResult.data
+    const tier = userProfileResult.data?.subscription_tier ?? "free"
+
+    // Premium users get Gemini 3 Pro for deeper contraindication reasoning;
+    // free users get Gemini 3 Flash (~7× cheaper, still competent).
+    const model = tier === "premium" ? "gemini-3-pro-preview" : "gemini-3-flash-preview"
 
     const token = await getAccessToken()
-    const endpoint = vertexUrl("gemini-2.5-flash", "generateContent")
+    const endpoint = vertexUrl(model, "generateContent")
 
     const response = await fetch(endpoint, {
       method: "POST",

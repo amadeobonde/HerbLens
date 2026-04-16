@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     }
 
     const token = await getAccessToken()
-    const endpoint = vertexUrl("gemini-2.5-flash", "generateContent")
+    const endpoint = vertexUrl("gemini-3-flash-preview", "generateContent")
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
           responseMimeType: "application/json",
           responseSchema: IDENTIFY_SCHEMA,
           temperature: 0.2,
+          thinkingConfig: { thinkingBudget: 512 },
         },
       }),
     })
