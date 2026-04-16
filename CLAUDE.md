@@ -238,3 +238,93 @@ Required `.xcconfig` keys (see `Config.xcconfig.template`):
 - `herblens_data_structure.json` — canonical schema
 - `supabase/migrations/20260415000001_initial_schema.sql` — DB shape
 - `supabase/functions/*` — edge function contracts for identify-plant, health-score, ai-chat, send-notification
+
+---
+
+## 10. Notes for downstream instances
+
+Findings logged by earlier instances so you don't repeat the archaeology. If you
+discover something that will save the next instance time, append here.
+
+### 10.1 Concurrency: types are `@MainActor` by default — mark data `nonisolated` (Instance 1)
+
+The project is configured with `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and
+`SWIFT_APPROACHABLE_CONCURRENCY = YES` (Swift 6.2/6.3 approachable-concurrency
+mode). Every declaration you write inherits `@MainActor` unless you opt out.
+
+This is the right default for UI/view code — but it is *wrong* for `Sendable`
+value types. A `@MainActor`-isolated struct cannot actually cross isolation
+boundaries cleanly, and its inits/properties become unreachable from actors
+and nonisolated async contexts. You will see errors like:
+
+- *"main actor-isolated initializer cannot be called from outside of the actor"*
+- *"main actor-isolated default value in a nonisolated context"*
+- *"main actor-isolated static property 'X' can not be referenced from a nonisolated context"*
+
+**Rule of thumb:** mark any pure data type, DTO, or static-token namespace
+`nonisolated`. Leave view code, `@Observable` models, and stateful singletons
+as the `@MainActor` default.
+
+```swift
+// Codable DTO — crosses actor boundaries, must be nonisolated.
+public nonisolated struct Plant: Codable, Sendable, Identifiable, Hashable { … }
+
+// Static design-token namespace — accessed from previews, tests, and feature
+// code in any isolation context.
+public nonisolated enum Theme { … }
+public extension Theme { nonisolated enum Color { … } }
+
+// Hex-parsing init on SwiftUI.Color — callable from nonisolated static stored
+// properties, so the init itself must be nonisolated.
+public extension Color { nonisolated init?(hex: String) { … } }
+
+// SwiftUI views, view models, observable state — keep the @MainActor default.
+struct HomeView: View { … }
+```
+
+Shared/Models, Shared/Theme, App/AppDependencies, App/SampleData, and
+App/MockServices already follow this pattern — copy it when you add your own
+DTOs or static token namespaces.
+
+### 10.2 Swift language mode (Instance 1)
+
+Project is pinned at **Swift 6.3** (was 5.0 in the initial commit; bumped in
+the Instance-1 pbxproj edit). If you add new Xcode targets, match the version.
+
+### 10.3 Synchronized folder groups — new files are auto-picked-up (Instance 1)
+
+The Xcode project uses `PBXFileSystemSynchronizedRootGroup`. **Do not edit
+`project.pbxproj` to register new Swift files** — drop them into any folder
+under `HerbLens/HerbLens/**` or `HerbLens/HerbLensTests/**` and they are
+compiled automatically. Xcode's SourceKit index can lag; if autocomplete shows
+"Cannot find type X" errors immediately after creating a file, trust
+`xcodebuild` over the in-editor diagnostics.
+
+### 10.4 `.gitkeep` files are excluded from the bundle (Instance 1)
+
+`EXCLUDED_SOURCE_FILE_NAMES = .gitkeep` is set on every target. Synced folder
+groups would otherwise copy every `.gitkeep` to the same output path
+(`HerbLens.app/.gitkeep`) and fail the build with duplicate-output errors.
+When you populate a previously-empty feature/service folder, you can delete
+its `.gitkeep` — it is no longer needed.
+
+### 10.5 SPM pins (Instance 1)
+
+`supabase-swift` is pinned to `2.43.1`, not the `3.0.0` the initial pbxproj
+asked for (no 3.x release exists). `Package.resolved` is committed; do not
+bump these without coordinating with Instance 2.
+
+### 10.6 JSON decoder strategy (Instance 1)
+
+`herblens_data_structure.json` uses **camelCase keys** despite §5.1's
+`.convertFromSnakeCase` guidance. Both work: camelCase passes through the
+strategy unchanged, and real Supabase/Postgres snake_case responses convert
+correctly. Keep `JSONDecoder.keyDecodingStrategy = .convertFromSnakeCase` set
+so the same decoder handles both the schema fixture and the wire format.
+
+### 10.7 `AppDependencies.live` is a `fatalError` until Instance 2 lands (Instance 1)
+
+`AppDependencies.live(supabaseURL:supabaseAnonKey:)` currently traps. The
+`@main` entry wires `.mock` so the app boots. Instance 2 will replace the body
+of `.live(...)` and swap `HerbLensApp.dependencies` to the live factory. Don't
+call `.live` from previews or tests — use `.mock`.
