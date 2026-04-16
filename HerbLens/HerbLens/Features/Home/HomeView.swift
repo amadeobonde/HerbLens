@@ -126,7 +126,9 @@ public struct HomeView: View {
                 )
 
                 if !data.featured.isEmpty {
-                    FeaturedPlantsCarousel(plants: data.featured) { plant in
+                    // Rotate daily so the "Featured today" strip feels fresh —
+                    // deterministic per UTC calendar day, no server call needed.
+                    FeaturedPlantsCarousel(plants: DailyRotation.rotated(data.featured)) { plant in
                         path.append(.plant(id: plant.id))
                     }
                 }

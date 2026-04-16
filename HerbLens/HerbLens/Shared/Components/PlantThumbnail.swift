@@ -22,21 +22,31 @@ public struct PlantThumbnail: View {
 
     public var body: some View {
         Group {
-            if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
-                Image(local)
-                    .resizable()
-                    .scaledToFill()
-            } else if let url = URL(string: plant.imageUrl), !plant.imageUrl.isEmpty {
-                AsyncImage(url: url) { phase in
+            if let webURL = PlantWebImages.url(for: plant.commonName) {
+                // Prefer real web photography — the app feels like an herb guide,
+                // not a sticker book. `AsyncImage` caches per URL.
+                AsyncImage(url: webURL) { phase in
                     switch phase {
                     case .empty:
-                        placeholder
+                        skeleton
                     case .success(let image):
                         image.resizable().scaledToFill()
                     case .failure:
-                        placeholder
+                        fallbackLocalOrPlaceholder
                     @unknown default:
                         placeholder
+                    }
+                }
+            } else if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
+                Image(local).resizable().scaledToFill()
+            } else if let url = URL(string: plant.imageUrl), !plant.imageUrl.isEmpty {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:      skeleton
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure:    placeholder
+                    @unknown default: placeholder
                     }
                 }
             } else {
@@ -44,6 +54,24 @@ public struct PlantThumbnail: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    /// Skeleton shown while the web image is still loading. Soft sage flash so the
+    /// empty state doesn't pop as a dead gray box before the photo arrives.
+    private var skeleton: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Theme.Color.sage.opacity(0.15))
+    }
+
+    /// Web image failed — try the bundled tea-card art before falling through to
+    /// the warm placeholder. Useful for offline / flaky networks.
+    @ViewBuilder
+    private var fallbackLocalOrPlaceholder: some View {
+        if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
+            Image(local).resizable().scaledToFill()
+        } else {
+            placeholder
+        }
     }
 
     /// Warm fallback. Soft sage panel + brewing mascot — never a blank rectangle.
