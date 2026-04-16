@@ -57,6 +57,9 @@ public struct VaultHomeView: View {
 
     public var body: some View {
         VStack(spacing: Theme.Spacing.md) {
+            vaultHeader
+                .padding(.horizontal, Theme.Spacing.md)
+
             picker
                 .padding(.horizontal, Theme.Spacing.md)
 
@@ -67,6 +70,27 @@ public struct VaultHomeView: View {
         .padding(.top, Theme.Spacing.md)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Color.background.ignoresSafeArea())
+    }
+
+    /// Mascot-led section header. Teacher Bamboo for Herbs (educational framing),
+    /// brewing Bamboo for Brews (kitchen framing). Picks up the variant when the
+    /// segmented picker flips so the mood matches the active tab.
+    private var vaultHeader: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            MascotBadge(section == .herbs ? .teacher : .brewing, size: 72)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(section == .herbs ? "Your herb library" : "Your brews")
+                    .font(Theme.Font.title)
+                    .foregroundStyle(Theme.Color.textPrimary)
+                Text(section == .herbs
+                     ? "Every plant you've scanned."
+                     : "Every brew you've made.")
+                    .font(Theme.Font.caption)
+                    .foregroundStyle(Theme.Color.textSecondary)
+            }
+            Spacer(minLength: 0)
+        }
     }
 
     // MARK: - Picker

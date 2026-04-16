@@ -81,13 +81,21 @@ struct RecipesHomeView: View {
                 header
                 filterChips
                 if teasVisible, !teas.isEmpty {
-                    SectionHeader("Teas")
+                    SectionHeader("Teas") {
+                        MascotBadge(.brewing, size: 36, breathes: false)
+                    }
                     teasGrid
                 }
                 if tincturesVisible, !tinctures.isEmpty {
-                    SectionHeader("Tinctures")
+                    SectionHeader("Tinctures") {
+                        MascotBadge(.teacher, size: 36, breathes: false)
+                    }
                     tincturesGrid
                 }
+                // Warm footer so the list doesn't dead-end into empty scroll space.
+                recipesFooter
+                    .padding(.top, Theme.Spacing.xl)
+                    .padding(.bottom, Theme.Spacing.xl)
             }
             .padding(.vertical, Theme.Spacing.md)
             .padding(.horizontal, Theme.Spacing.sm)
@@ -106,6 +114,18 @@ struct RecipesHomeView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, Theme.Spacing.md)
+    }
+
+    /// Gentle "the end" closer at the bottom of the recipe list. Celebrating
+    /// Bamboo + copy invites the user to loop back up.
+    private var recipesFooter: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            MascotBadge(.celebrating, size: 88)
+            Text("That's today's shelf.")
+                .font(Theme.Font.callout)
+                .foregroundStyle(Theme.Color.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private var filterChips: some View {

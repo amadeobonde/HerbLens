@@ -16,7 +16,7 @@ import SwiftUI
 /// keeps the nav shell a stable integration surface.
 struct ContentView: View {
     @Environment(\.dependencies) private var dependencies
-    @State private var selection: AppTab = .home
+    @State private var selection: AppTab = .scan
     @State private var showPaywallStub = false
     @State private var tier: SubscriptionTier = .free
     @State private var userDisplayName: String = "Guest"
