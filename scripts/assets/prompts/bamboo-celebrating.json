@@ -1,0 +1,9 @@
+{
+  "media": "image",
+  "variant": "pro-image",
+  "transparent": true,
+  "include_mascot": true,
+  "aspect_ratio": "1:1",
+  "use_bamboo_reference": true,
+  "prompt": "Bamboo, the HerbLens panda mascot — the exact same character as the attached reference image, in the same clean app-mascot style. He is mid-cheer: both arms raised overhead in a joyful V, feet slightly apart, toes just barely lifting off the ground (a gentle hop, not a dramatic jump). Eyes are identical happy closed crescents, both arching upward. Open-mouthed smile showing a small pink tongue (kid-friendly). \n\nCRITICAL CHARACTER CONSTRAINTS (must match reference): \n- Blush circles: SMALL soft pink ovals, same size and saturation as in the reference image. NOT big, NOT cartoonishly oversized, NOT hot-pink — keep them subtle. \n- Fur palette: body #F7EFE2, markings #2A2A2A — identical to reference. \n- Bamboo leaf tips visible on both ears. \n- Proportions: same chibi head-to-body ratio as reference.\n\nCONFETTI: Arcing over Bamboo's head, a light shower of six to ten small botanical elements — herb leaves in sage, forest green, and amber, plus two tiny chamomile flowers. Each shape is a clean smooth silhouette with soft gentle shading, NO hard outline, NO pink or magenta rim, NO sparkles, NO glitter, NO stars.\n\nGROUND/SHADOW: Absolutely NO ground, NO floor, NO shadow under his feet, NO ellipse or oval beneath him. Nothing below the subject whatsoever. Bamboo floats cleanly with no indication of a surface.\n\nRENDERING STYLE: Clean app-mascot illustration matching the reference exactly — flat base colors with smooth airbrushed soft-shading, NO painterly brushstrokes, NO paper grain, NO sketchy edges. Subject + confetti fit within frame with at least 10 percent margin on every side. Use for the scan-complete celebration screen."
+}
