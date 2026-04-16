@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// A single chat bubble. Role controls layout and surface:
-/// - `.user` — right-aligned forest-green bubble with bone text.
-/// - `.assistant` — left-aligned glass card with a Bamboo avatar and markdown content.
-/// When `isStreaming` is true, a blinking caret is rendered at the tail.
+/// - `.user` — trailing-aligned sage capsule with bone text.
+/// - `.assistant` — leading-aligned subtle glass card with a Bamboo mascot avatar and
+///   markdown-rendered content. When `isStreaming` is true, a blinking caret is rendered
+///   at the tail to mark the live token stream.
 struct MessageBubble: View {
     let role: MessageRole
     let content: String
@@ -24,36 +25,27 @@ struct MessageBubble: View {
                 .foregroundStyle(Theme.Color.bone)
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.sm)
-                .background(Theme.Color.forest, in: userBubbleShape)
+                .background(Theme.Color.sage, in: Capsule(style: .continuous))
         }
-    }
-
-    private var userBubbleShape: some Shape {
-        UnevenRoundedRectangle(
-            topLeadingRadius: 18,
-            bottomLeadingRadius: 18,
-            bottomTrailingRadius: 4,
-            topTrailingRadius: 18
-        )
     }
 
     private var assistantBubble: some View {
         HStack(alignment: .top, spacing: Theme.Spacing.xs) {
-            BambooAvatarView(size: 28)
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                MarkdownRenderer(
-                    blocks: MarkdownTableExtractor.extract(from: displayContent)
-                )
-                if isStreaming {
-                    Text("▍")
-                        .font(Theme.Font.body)
-                        .foregroundStyle(Theme.Color.forest)
-                        .opacity(0.6)
+            MascotBadge(.teacher, size: 28)
+            GlassCard(tone: .subtle) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    MarkdownRenderer(
+                        blocks: MarkdownTableExtractor.extract(from: displayContent)
+                    )
+                    .foregroundStyle(Theme.Color.textPrimary)
+                    if isStreaming {
+                        Text("▍")
+                            .font(Theme.Font.body)
+                            .foregroundStyle(Theme.Color.sage)
+                            .opacity(0.7)
+                    }
                 }
             }
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.vertical, Theme.Spacing.sm)
-            .glass(.card)
             Spacer(minLength: Theme.Spacing.lg)
         }
     }
