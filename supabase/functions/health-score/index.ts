@@ -6,6 +6,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
+const HEALTH_SCORE_SCHEMA = {
+  type: "object",
+  properties: {
+    overallScore: { type: "integer" },
+    goalBreakdown: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          goalName: { type: "string" },
+          relevanceScore: { type: "integer" },
+          reason: { type: "string" },
+        },
+        required: ["goalName", "relevanceScore", "reason"],
+      },
+    },
+    warnings: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", enum: ["allergy", "medication_interaction", "condition"] },
+          severity: { type: "string", enum: ["low", "moderate", "high"] },
+          message: { type: "string" },
+        },
+        required: ["type", "severity", "message"],
+      },
+    },
+  },
+  required: ["overallScore", "goalBreakdown", "warnings"],
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
@@ -45,37 +77,44 @@ Deno.serve(async (req) => {
     const plant = plantResult.data
     const healthProfile = profileResult.data
 
-    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY")
-    if (!perplexityKey) throw new Error("PERPLEXITY_API_KEY not configured")
+    const geminiKey = Deno.env.get("GEMINI_API_KEY")
+    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`
+
+    const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${perplexityKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "sonar-pro",
-        messages: [
-          {
-            role: "system",
-            content: `You are a health assessment AI. Given a plant's properties and a user's health profile, compute a health relevance score (0-100). Return JSON: { overallScore: number, goalBreakdown: [{ goalName, relevanceScore, reason }], warnings: [{ type, severity, message }] }`,
-          },
-          {
-            role: "user",
-            content: JSON.stringify({ plant, healthProfile }),
-          },
-        ],
+        systemInstruction: {
+          role: "user",
+          parts: [{
+            text: "You are a health assessment AI. Given a plant's properties and a user's health profile, compute a health relevance score (0-100). Break it down per user health goal with a relevance score and a short reason grounded in the plant's known uses. Always surface warnings when the plant's contraindications overlap the user's allergies, medications, or conditions. Be conservative — when unsure, lower the score and add a warning.",
+          }],
+        },
+        contents: [{
+          role: "user",
+          parts: [{ text: JSON.stringify({ plant, healthProfile }) }],
+        }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: HEALTH_SCORE_SCHEMA,
+          temperature: 0.1,
+        },
       }),
     })
 
+    if (!response.ok) {
+      const errText = await response.text()
+      throw new Error(`Gemini error ${response.status}: ${errText}`)
+    }
+
     const result = await response.json()
+    const content = result.candidates?.[0]?.content?.parts?.[0]?.text
+    const parsed = content ? JSON.parse(content) : null
 
     return new Response(
-      JSON.stringify({
-        health_score: result.choices?.[0]?.message?.content,
-        citations: result.citations ?? [],
-      }),
+      JSON.stringify({ health_score: parsed }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     )
   } catch (error) {

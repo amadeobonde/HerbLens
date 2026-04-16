@@ -1,9 +1,32 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { createClient } from "jsr:@supabase/supabase-js@2"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+}
+
+const IDENTIFY_SCHEMA = {
+  type: "object",
+  properties: {
+    plant_name: { type: "string" },
+    confidence: { type: "number" },
+    scientific_name: { type: "string" },
+    properties: { type: "array", items: { type: "string" } },
+    description: { type: "string" },
+    candidates: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          plant_name: { type: "string" },
+          confidence: { type: "number" },
+          scientific_name: { type: "string" },
+        },
+        required: ["plant_name", "confidence", "scientific_name"],
+      },
+    },
+  },
+  required: ["plant_name", "confidence", "scientific_name", "description"],
 }
 
 Deno.serve(async (req) => {
@@ -12,7 +35,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { image_base64 } = await req.json()
+    const { image_base64, mime_type } = await req.json()
     if (!image_base64) {
       return new Response(
         JSON.stringify({ error: "image_base64 is required" }),
@@ -20,42 +43,47 @@ Deno.serve(async (req) => {
       )
     }
 
-    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY")
-    if (!perplexityKey) {
-      throw new Error("PERPLEXITY_API_KEY not configured")
-    }
+    const geminiKey = Deno.env.get("GEMINI_API_KEY")
+    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`
+
+    const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${perplexityKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "sonar-pro",
-        messages: [
-          {
-            role: "system",
-            content: "You are a botanical expert. Identify the plant in the image and return JSON with: plant_name, confidence (0-1), scientific_name, properties (array of tags), and description. Be precise and cite sources.",
-          },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Identify this plant:" },
-              { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image_base64}` } },
-            ],
-          },
-        ],
+        systemInstruction: {
+          role: "user",
+          parts: [{
+            text: "You are a botanical expert. Identify the plant in the image. Return the top match plus up to 2 alternate candidates when confidence < 0.75. Always be precise and conservative with confidence. Never fabricate scientific names.",
+          }],
+        },
+        contents: [{
+          role: "user",
+          parts: [
+            { text: "Identify this plant." },
+            { inlineData: { mimeType: mime_type ?? "image/jpeg", data: image_base64 } },
+          ],
+        }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: IDENTIFY_SCHEMA,
+          temperature: 0.2,
+        },
       }),
     })
 
+    if (!response.ok) {
+      const errText = await response.text()
+      throw new Error(`Gemini error ${response.status}: ${errText}`)
+    }
+
     const result = await response.json()
+    const content = result.candidates?.[0]?.content?.parts?.[0]?.text
+    const parsed = content ? JSON.parse(content) : null
 
     return new Response(
-      JSON.stringify({
-        identification: result.choices?.[0]?.message?.content,
-        citations: result.citations ?? [],
-      }),
+      JSON.stringify({ identification: parsed }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     )
   } catch (error) {

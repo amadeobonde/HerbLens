@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { messages, context_plant_id } = await req.json()
+    const { messages, context_plant_id, stream } = await req.json()
     if (!messages || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: "messages array is required" }),
@@ -58,35 +58,89 @@ Deno.serve(async (req) => {
       healthContext = `\n\nUser health profile: Goals: ${healthProfile.health_goals?.map((g: any) => g.name).join(", ")}. Allergies: ${healthProfile.allergies?.join(", ") || "none"}. Medications: ${healthProfile.medications?.join(", ") || "none"}. Conditions: ${healthProfile.conditions?.join(", ") || "none"}.`
     }
 
-    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY")
-    if (!perplexityKey) throw new Error("PERPLEXITY_API_KEY not configured")
+    const geminiKey = Deno.env.get("GEMINI_API_KEY")
+    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
 
-    const systemMessage = `You are Bamboo, a friendly and knowledgeable herbal medicine expert panda. You help users learn about herbs, teas, tinctures, and natural remedies. Always cite sources. Warn about contraindications and drug interactions. Be warm but scientifically accurate.${plantContext}${healthContext}`
+    const systemInstruction = `You are Bamboo, a friendly and knowledgeable herbal medicine expert panda. You help users learn about herbs, teas, tinctures, and natural remedies. Warn about contraindications and drug interactions. Be warm but scientifically accurate. Prefer plain, encouraging language over jargon.${plantContext}${healthContext}`
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    // Convert OpenAI-style messages -> Gemini contents
+    const contents = messages.map((m: any) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: typeof m.content === "string" ? m.content : JSON.stringify(m.content) }],
+    }))
+
+    const shouldStream = stream !== false // default to streaming
+    const method = shouldStream ? "streamGenerateContent" : "generateContent"
+    const suffix = shouldStream ? "&alt=sse" : ""
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:${method}?key=${geminiKey}${suffix}`
+
+    const upstream = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${perplexityKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "sonar-pro",
-        messages: [
-          { role: "system", content: systemMessage },
-          ...messages,
-        ],
+        systemInstruction: { role: "user", parts: [{ text: systemInstruction }] },
+        contents,
+        generationConfig: { temperature: 0.7 },
       }),
     })
 
-    const result = await response.json()
+    if (!upstream.ok) {
+      const errText = await upstream.text()
+      throw new Error(`Gemini error ${upstream.status}: ${errText}`)
+    }
 
-    return new Response(
-      JSON.stringify({
-        message: result.choices?.[0]?.message?.content,
-        citations: result.citations ?? [],
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    )
+    if (!shouldStream) {
+      const result = await upstream.json()
+      const text = result.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? ""
+      return new Response(
+        JSON.stringify({ message: text }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      )
+    }
+
+    // Relay SSE stream to the client, reshaping each chunk to { delta: "..." }
+    const { readable, writable } = new TransformStream()
+    const writer = writable.getWriter()
+    const encoder = new TextEncoder()
+    const decoder = new TextDecoder()
+
+    ;(async () => {
+      const reader = upstream.body!.getReader()
+      let buffer = ""
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split("\n")
+          buffer = lines.pop() ?? ""
+          for (const line of lines) {
+            if (!line.startsWith("data:")) continue
+            const payload = line.slice(5).trim()
+            if (!payload) continue
+            try {
+              const json = JSON.parse(payload)
+              const delta = json.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? ""
+              if (delta) {
+                await writer.write(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`))
+              }
+            } catch (_) { /* skip malformed */ }
+          }
+        }
+        await writer.write(encoder.encode(`data: [DONE]\n\n`))
+      } finally {
+        await writer.close()
+      }
+    })()
+
+    return new Response(readable, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    })
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
