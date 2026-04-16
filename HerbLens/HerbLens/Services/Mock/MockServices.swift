@@ -13,6 +13,8 @@ nonisolated enum MockServices {
         func signIn(email: String, password: String) async throws -> UserProfile { SampleData.userProfile }
         func signOut() async throws {}
         func sendMagicLink(email: String) async throws {}
+        func verifyEmailOTP(email: String, token: String) async throws -> UserProfile { SampleData.userProfile }
+        func completeOnboarding(userID: String) async throws {}
     }
 
     // MARK: - Plants
