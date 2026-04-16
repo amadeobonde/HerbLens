@@ -1,3 +1,4 @@
+@preconcurrency import AVFoundation
 import SwiftUI
 import UIKit
 
@@ -8,8 +9,8 @@ import UIKit
 struct RecipeFinishView: View {
     let recipe: Recipe
     let madeStore: MadeRecipesStore
-    let onSaved: (BrewEntry) -> Void
-    let onDismiss: () -> Void
+    let onSaved: @MainActor (BrewEntry) -> Void
+    let onDismiss: @MainActor () -> Void
 
     @State private var camera = RecipeCameraController()
     @State private var capturedImage: UIImage?
@@ -41,12 +42,12 @@ struct RecipeFinishView: View {
                     .padding(.horizontal, Theme.Spacing.md)
 
                 PrimaryButton(didSave ? "Saved" : "Add to Vault", isDisabled: didSave) {
-                    saveEntry()
+                    Task { @MainActor in saveEntry() }
                 }
                 .padding(.horizontal, Theme.Spacing.md)
 
                 PrimaryButton("Skip", variant: .ghost) {
-                    onDismiss()
+                    Task { @MainActor in onDismiss() }
                 }
                 .padding(.horizontal, Theme.Spacing.md)
             }
@@ -60,7 +61,7 @@ struct RecipeFinishView: View {
             )
             .ignoresSafeArea()
         )
-        .swipeDownToDismiss { onDismiss() }
+        .swipeDownToDismiss { Task { @MainActor in onDismiss() } }
         .task {
             await camera.requestPermissionIfNeeded()
             camera.start()

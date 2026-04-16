@@ -8,7 +8,7 @@ import SwiftUI
 struct RecipeStepsPager: View {
     let steps: [RecipeStep]
     let isMade: Bool
-    let onToggleMade: () -> Void
+    let onToggleMade: @MainActor () -> Void
 
     @State private var currentIndex: Int = 0
 
@@ -71,7 +71,7 @@ struct RecipeStepsPager: View {
                     .foregroundStyle(Theme.Color.textPrimary)
                 PrimaryButton(isMade ? "Unmark" : "Mark as made", variant: isMade ? .ghost : .filled) {
                     RecipeHaptics.tick()
-                    onToggleMade()
+                    Task { @MainActor in onToggleMade() }
                 }
             }
             .frame(maxWidth: .infinity)

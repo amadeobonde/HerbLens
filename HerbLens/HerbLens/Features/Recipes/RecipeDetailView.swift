@@ -8,7 +8,11 @@ struct RecipeDetailView: View {
     let recipe: Recipe
     let isUnlocked: Bool
     let madeStore: MadeRecipesStore
-    let onTapUpgrade: () -> Void
+    let onTapUpgrade: @MainActor () -> Void
+
+    @State private var showingPlayer: Bool = false
+    @State private var showingFinish: Bool = false
+    @State private var finishedState: RecipePlayerState?
 
     @State private var showingPlayer: Bool = false
     @State private var showingFinish: Bool = false
@@ -35,7 +39,7 @@ struct RecipeDetailView: View {
                     if isUnlocked {
                         PrimaryButton("Start brewing") {
                             RecipeHaptics.start()
-                            showingPlayer = true
+                            Task { @MainActor in showingPlayer = true }
                         }
                         .padding(.horizontal, Theme.Spacing.md)
                         .shadow(Theme.Shadow.float)

@@ -34,28 +34,31 @@ struct RecipeImageLookupTests {
         )
     }
 
-    @Test("each shipped tea asset resolves by title", arguments: [
-        ("Classic Chamomile Sleep Tea", "tea-card-chamomile"),
-        ("Fresh Peppermint Digestive Tea", "tea-card-peppermint"),
-        ("Warming Ginger Root Tea", "tea-card-ginger"),
-        ("Bedtime Lavender Tea", "tea-card-lavender"),
-        ("Citrus Lemon Balm Tea", "tea-card-lemon-balm"),
-        ("Immune Support Echinacea Tea", "tea-card-echinacea"),
-        ("South African Rooibos Tea", "tea-card-rooibos"),
-        ("Golden Dandelion Tea", "tea-card-dandelion"),
+    @Test("shipped tea assets resolve by title", arguments: [
+        ("Classic Chamomile Sleep Tea", "TeaCardChamomile"),
+        ("Fresh Peppermint Digestive Tea", "TeaCardPeppermint"),
     ])
     func teaAssetsResolve(title: String, expected: String) {
         #expect(RecipeImageLookup.assetName(for: tea(named: title)) == expected)
     }
 
-    @Test("each shipped tincture asset resolves by title", arguments: [
-        ("Echinacea Immune Tincture", "tincture-echinacea"),
-        ("Valerian Sleep Tincture", "tincture-valerian"),
-        ("Elderberry Winter Tincture", "tincture-elderberry"),
-        ("Milk Thistle Liver Support Tincture", "tincture-milk-thistle"),
+    @Test("teas without a bundled card return nil", arguments: [
+        "Warming Ginger Root Tea",
+        "Bedtime Lavender Tea",
+        "Citrus Lemon Balm Tea",
     ])
-    func tinctureAssetsResolve(title: String, expected: String) {
-        #expect(RecipeImageLookup.assetName(for: tincture(named: title)) == expected)
+    func unbundledTeasReturnNil(title: String) {
+        #expect(RecipeImageLookup.assetName(for: tea(named: title)) == nil)
+    }
+
+    @Test("tinctures currently have no bundled assets", arguments: [
+        "Echinacea Immune Tincture",
+        "Valerian Sleep Tincture",
+        "Elderberry Winter Tincture",
+        "Milk Thistle Liver Support Tincture",
+    ])
+    func tincturesReturnNil(title: String) {
+        #expect(RecipeImageLookup.assetName(for: tincture(named: title)) == nil)
     }
 
     @Test("unknown plant returns nil")
@@ -66,6 +69,6 @@ struct RecipeImageLookupTests {
 
     @Test("case insensitive matching")
     func caseInsensitive() {
-        #expect(RecipeImageLookup.assetName(for: tea(named: "CHAMOMILE bedtime")) == "tea-card-chamomile")
+        #expect(RecipeImageLookup.assetName(for: tea(named: "CHAMOMILE bedtime")) == "TeaCardChamomile")
     }
 }

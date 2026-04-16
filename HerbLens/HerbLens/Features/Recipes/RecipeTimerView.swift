@@ -30,7 +30,7 @@ struct RecipeTimerView: View {
                     controlButton
                     PrimaryButton("Reset", variant: .ghost) {
                         RecipeHaptics.tick()
-                        model.reset()
+                        Task { @MainActor in model.reset() }
                     }
                     .frame(maxWidth: 140)
                 }
@@ -53,17 +53,17 @@ struct RecipeTimerView: View {
         case .idle, .paused:
             PrimaryButton("Start") {
                 RecipeHaptics.start()
-                model.start()
+                Task { @MainActor in model.start() }
             }
         case .running:
             PrimaryButton("Pause", variant: .ghost) {
                 RecipeHaptics.tick()
-                model.pause()
+                Task { @MainActor in model.pause() }
             }
         case .completed:
             PrimaryButton("Again") {
                 RecipeHaptics.finish()
-                model.reset()
+                Task { @MainActor in model.reset() }
             }
         }
     }

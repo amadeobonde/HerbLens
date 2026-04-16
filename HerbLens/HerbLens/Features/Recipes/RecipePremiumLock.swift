@@ -11,7 +11,7 @@ struct RecipePremiumLock: View {
     }
 
     let scope: Scope
-    let onTapUpgrade: () -> Void
+    let onTapUpgrade: @MainActor () -> Void
 
     var body: some View {
         GlassCard(tone: .modal) {
@@ -28,7 +28,7 @@ struct RecipePremiumLock: View {
                     .foregroundStyle(Theme.Color.textSecondary)
                 PrimaryButton("Start 7-day free trial") {
                     RecipeHaptics.tick()
-                    onTapUpgrade()
+                    Task { @MainActor in onTapUpgrade() }
                 }
                 .accessibilityLabel("Start 7-day free trial")
             }

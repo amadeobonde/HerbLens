@@ -1,5 +1,6 @@
 @preconcurrency import AVFoundation
 import Observation
+import SwiftUI
 import UIKit
 
 /// Recipes-local camera controller used by the finish view's "show off your brew"

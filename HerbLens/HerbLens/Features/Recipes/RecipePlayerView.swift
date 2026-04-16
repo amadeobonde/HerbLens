@@ -192,7 +192,7 @@ struct RecipePlayerView: View {
                     timerStartPauseButton(timer: timer)
                     PrimaryButton("Reset", variant: .ghost) {
                         RecipeHaptics.tick()
-                        state.resetTimer()
+                        Task { @MainActor in state.resetTimer() }
                     }
                     .frame(maxWidth: 120)
                 }
@@ -206,11 +206,11 @@ struct RecipePlayerView: View {
             HStack {
                 PrimaryButton(state.isAtLastStep ? "Finish brew" : "Next step") {
                     RecipeHaptics.start()
-                    _ = state.advance()
+                    Task { @MainActor in _ = state.advance() }
                 }
                 PrimaryButton("Back", variant: .ghost) {
                     RecipeHaptics.tick()
-                    state.goBack()
+                    Task { @MainActor in state.goBack() }
                 }
                 .frame(maxWidth: 140)
             }
@@ -223,17 +223,17 @@ struct RecipePlayerView: View {
         case .idle, .paused:
             PrimaryButton("Start") {
                 RecipeHaptics.start()
-                state.startTimer()
+                Task { @MainActor in state.startTimer() }
             }
         case .running:
             PrimaryButton("Pause", variant: .ghost) {
                 RecipeHaptics.tick()
-                state.pauseTimer()
+                Task { @MainActor in state.pauseTimer() }
             }
         case .completed:
             PrimaryButton(state.isAtLastStep ? "Finish brew" : "Next step") {
                 RecipeHaptics.finish()
-                _ = state.advance()
+                Task { @MainActor in _ = state.advance() }
             }
         }
     }
