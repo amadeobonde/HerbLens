@@ -69,8 +69,12 @@ struct ScanIdleView: View {
                     .frame(height: 420)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
 
-                MascotBadge(.default, size: 72)
-                    .offset(y: -36)
+                // Peek-mascot only when the real camera is live; the placeholder
+                // state has its own centered mascot so doubling up reads as cluttered.
+                if cameraController.authorization == .authorized {
+                    MascotBadge(.default, size: 72)
+                        .offset(y: -36)
+                }
             }
         }
         .shadow(Theme.Shadow.card)
@@ -98,86 +102,31 @@ struct ScanIdleView: View {
     }
 
     /// Fills the viewfinder card while the camera is not yet authorized or isn't
-    /// available (simulator). Apothecary scene as a warm backdrop + big scanning
-    /// mascot + helpful copy + 4 corner brackets in sage so the composition reads
-    /// as a real viewfinder rather than a bordered box.
+    /// available (simulator). Warm apothecary backdrop + one big scanning mascot
+    /// + a single readable line of copy. No extra chrome — the GlassCard's own
+    /// rounded rectangle is visual frame enough.
     private var placeholderTint: some View {
         ZStack {
             Image("Scenes/Apothecary")
                 .resizable()
                 .scaledToFill()
-                .opacity(0.85)
-                .blur(radius: 6)
+                .opacity(0.75)
+                .blur(radius: 4)
+                .overlay(Theme.Color.background.opacity(0.08))
 
-            // Subtle vignette darkens the edges so the mascot + copy pop.
-            RadialGradient(
-                colors: [Color.clear, Theme.Color.background.opacity(0.35)],
-                center: .center,
-                startRadius: 60,
-                endRadius: 240
-            )
+            VStack(spacing: Theme.Spacing.xs) {
+                MascotBadge(.scanning, size: 170)
 
-            VStack(spacing: Theme.Spacing.sm) {
-                MascotBadge(.scanning, size: 150)
-
-                VStack(spacing: 2) {
-                    Text("Point at any plant")
-                        .font(Theme.Font.headline)
-                        .foregroundStyle(Theme.Color.textPrimary)
-                    Text("We'll identify it in a second.")
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(Theme.Color.textSecondary)
-                }
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, Theme.Spacing.xxs)
-                .background(
-                    Capsule().fill(Theme.Color.background.opacity(0.7))
-                )
-            }
-
-            viewfinderCornerBrackets
-        }
-    }
-
-    /// Four L-shaped corner brackets — a real viewfinder shape rather than a
-    /// full rectangle outline.
-    private var viewfinderCornerBrackets: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
-            let bracketLen: CGFloat = 28
-            let inset: CGFloat = 20
-            let line: CGFloat = 3
-            ZStack {
-                // Top-left
-                bracket(isFlipH: false, isFlipV: false, length: bracketLen, thickness: line)
-                    .position(x: inset + bracketLen / 2, y: inset + bracketLen / 2)
-                // Top-right
-                bracket(isFlipH: true, isFlipV: false, length: bracketLen, thickness: line)
-                    .position(x: size.width - inset - bracketLen / 2, y: inset + bracketLen / 2)
-                // Bottom-left
-                bracket(isFlipH: false, isFlipV: true, length: bracketLen, thickness: line)
-                    .position(x: inset + bracketLen / 2, y: size.height - inset - bracketLen / 2)
-                // Bottom-right
-                bracket(isFlipH: true, isFlipV: true, length: bracketLen, thickness: line)
-                    .position(x: size.width - inset - bracketLen / 2, y: size.height - inset - bracketLen / 2)
+                Text("Point at any plant")
+                    .font(Theme.Font.headline)
+                    .foregroundStyle(Theme.Color.textPrimary)
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .background(
+                        Capsule().fill(Theme.Color.background.opacity(0.85))
+                    )
             }
         }
-    }
-
-    private func bracket(isFlipH: Bool, isFlipV: Bool, length: CGFloat, thickness: CGFloat) -> some View {
-        ZStack(alignment: isFlipH ? (isFlipV ? .bottomTrailing : .topTrailing) : (isFlipV ? .bottomLeading : .topLeading)) {
-            // Horizontal arm
-            Rectangle()
-                .fill(Theme.Color.sage)
-                .frame(width: length, height: thickness)
-                .frame(width: length, height: length, alignment: isFlipV ? .bottom : .top)
-            // Vertical arm
-            Rectangle()
-                .fill(Theme.Color.sage)
-                .frame(width: thickness, height: length)
-                .frame(width: length, height: length, alignment: isFlipH ? .trailing : .leading)
-        }
-        .frame(width: length, height: length)
     }
 
     private var permissionPrompt: some View {
