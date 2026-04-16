@@ -87,7 +87,9 @@ Every feature-owning instance must distinguish free vs premium visually — not 
 If you need something from Shared/ or Services/ that doesn't exist, append a line here.
 Instance 1 or 2 will pick it up.
 
-- (empty)
+- Instance 7 (Recipes): seed 4 tincture recipes into `Services/Mock/SampleData.swift` so the Recipes home view ships tincture data from the mock repository instead of relying on `RecipePreviewFixtures.localTinctures`. IDs to mirror: `r-tincture-echinacea`, `r-tincture-valerian`, `r-tincture-elderberry`, `r-tincture-milk-thistle`. Shape: `Recipe(type: .tincture, accessTier: .premium, steepOrCureTime: "4-8 weeks", ...)`. Canonical sample in `herblens_data_structure.json`. Once landed, delete the `localTinctures` fallback in `HerbLens/HerbLens/Features/Recipes/PreviewFixtures.swift` and the merge check in `RecipesHomeView.loadRecipes()`.
+- Instance 5 (Scan) → Instance 2: add `ScansRepository.remainingToday(userID:) async throws -> Int?` that returns `nil` for premium (unlimited) and `max(0, dailyFreeLimit - used)` for free. Until it ships, the idle chip only counts down from an in-memory counter incremented on successful identifies within the current session — it won't reflect scans made earlier today.
+- Instance 5 (Scan) → user: real-device camera requires two build-setting keys on the app target (CLAUDE.md §4.5 forbids hand-edits to `project.pbxproj`). Add from Xcode → Info tab: `INFOPLIST_KEY_NSCameraUsageDescription` (suggested: "HerbLens uses the camera to identify plants you point at.") and `INFOPLIST_KEY_NSPhotoLibraryUsageDescription` ("HerbLens reads photos you pick so it can identify the plants in them."). Simulator + PhotosPicker path works without them; first `AVCaptureDevice.requestAccess(for:)` call crashes on device without them.
 
 ---
 
