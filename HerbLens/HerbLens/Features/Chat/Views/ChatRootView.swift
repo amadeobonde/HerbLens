@@ -9,7 +9,7 @@ import SwiftUI
 struct ChatRootView: View {
     @Environment(\.dependencies) private var dependencies
     let contextPlantID: String?
-    var onUpgradeTapped: () -> Void = {}
+    var onUpgradeTapped: @Sendable () -> Void = {}
 
     @State private var tier: SubscriptionTier?
     @State private var path = NavigationPath()
@@ -55,8 +55,8 @@ struct ChatRootView: View {
             onSelect: { conversation in
                 path.append(conversation)
             },
-            onStartBlank: {
-                Task { await startNewConversation(contextPlantID: nil) }
+            onStartBlank: { @Sendable in
+                Task { @MainActor in await startNewConversation(contextPlantID: nil) }
             }
         )
         .overlay(alignment: .top) {

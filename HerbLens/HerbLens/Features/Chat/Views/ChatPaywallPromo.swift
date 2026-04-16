@@ -3,7 +3,7 @@ import SwiftUI
 /// Full-screen upsell shown to free users. The CTA calls an injected closure; the real
 /// paywall presentation lands with Instance 10, so this view stays a passive promo.
 struct ChatPaywallPromo: View {
-    var onUpgradeTapped: () -> Void = {}
+    var onUpgradeTapped: @Sendable () -> Void = {}
 
     private let bullets: [String] = [
         "Unlimited conversations with Bamboo",
@@ -15,11 +15,11 @@ struct ChatPaywallPromo: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.lg) {
             Spacer()
-            BambooAvatarView(size: 160)
+            MascotBadge(.teacher, size: 160)
             VStack(spacing: Theme.Spacing.sm) {
                 Text("Unlock Bamboo — your herbal mentor")
                     .font(Theme.Font.title)
-                    .foregroundStyle(Theme.Color.charcoal)
+                    .foregroundStyle(Theme.Color.textPrimary)
                     .multilineTextAlignment(.center)
                 Text("AI Expert Chat is a premium feature.")
                     .font(Theme.Font.callout)
@@ -27,30 +27,21 @@ struct ChatPaywallPromo: View {
                     .multilineTextAlignment(.center)
             }
 
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                ForEach(bullets, id: \.self) { bullet in
-                    HStack(alignment: .top, spacing: Theme.Spacing.xs) {
-                        Image(systemName: "leaf.fill")
-                            .foregroundStyle(Theme.Color.sage)
-                        Text(bullet)
-                            .font(Theme.Font.body)
-                            .foregroundStyle(Theme.Color.charcoal)
+            GlassCard(tone: .standard) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    ForEach(bullets, id: \.self) { bullet in
+                        HStack(alignment: .top, spacing: Theme.Spacing.xs) {
+                            Image(systemName: "leaf.fill")
+                                .foregroundStyle(Theme.Color.sage)
+                            Text(bullet)
+                                .font(Theme.Font.body)
+                                .foregroundStyle(Theme.Color.textPrimary)
+                        }
                     }
                 }
             }
-            .padding(Theme.Spacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glass(.card)
 
-            Button(action: onUpgradeTapped) {
-                Text("Upgrade to Premium")
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.bone)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Theme.Spacing.md)
-                    .background(Theme.Color.forest, in: Capsule())
-            }
-            .buttonStyle(.plain)
+            PrimaryButton("Upgrade to Premium", action: onUpgradeTapped)
             Spacer()
         }
         .padding(.horizontal, Theme.Spacing.lg)

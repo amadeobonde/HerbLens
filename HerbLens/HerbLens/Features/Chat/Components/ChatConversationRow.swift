@@ -1,34 +1,56 @@
 import SwiftUI
 
-/// One row in the conversation list. Title is a short excerpt of the first user message
-/// (or "New conversation" when empty); subtitle is the context plant name, and the
-/// trailing timestamp uses the relative short format.
+/// One row in the conversation list. The row is wrapped in a subtle glass card and shows
+/// the contextual plant thumbnail (if any), an excerpt of the first user message, the
+/// plant subtitle, and a relative timestamp. Free chat (no plant context) falls back to
+/// the Bamboo mascot avatar so every row keeps a consistent visual anchor.
 struct ChatConversationRow: View {
     let conversation: Conversation
     let plantName: String?
+    var plantThumbnailURL: URL? = nil
 
     var body: some View {
-        HStack(alignment: .center, spacing: Theme.Spacing.sm) {
-            BambooAvatarView(size: 40)
+        GlassCard(tone: .subtle) {
+            HStack(alignment: .center, spacing: Theme.Spacing.sm) {
+                thumbnail
 
-            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-                Text(title)
-                    .font(Theme.Font.callout)
-                    .foregroundStyle(Theme.Color.charcoal)
-                    .lineLimit(1)
-                Text(subtitle)
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+                    Text(title)
+                        .font(Theme.Font.callout)
+                        .foregroundStyle(Theme.Color.textPrimary)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(Theme.Color.textSecondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(conversation.lastMessageAt.shortRelativeString)
                     .font(Theme.Font.caption)
                     .foregroundStyle(Theme.Color.textSecondary)
-                    .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text(conversation.lastMessageAt.shortRelativeString)
-                .font(Theme.Font.caption)
-                .foregroundStyle(Theme.Color.textSecondary)
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, Theme.Spacing.xs)
-        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private var thumbnail: some View {
+        if let url = plantThumbnailURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    Theme.Color.sage.opacity(0.25)
+                }
+            }
+            .frame(width: 44, height: 44)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Theme.Color.sage.opacity(0.25), lineWidth: 1))
+        } else {
+            MascotBadge(.teacher, size: 44)
+        }
     }
 
     private var title: String {

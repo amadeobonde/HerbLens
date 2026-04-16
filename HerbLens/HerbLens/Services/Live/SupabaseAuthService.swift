@@ -44,23 +44,6 @@ public struct SupabaseAuthService: AuthService {
         try await client.auth.signInWithOTP(email: email)
     }
 
-    public func verifyEmailOTP(email: String, token: String) async throws -> UserProfile {
-        let session = try await client.auth.verifyOTP(email: email, token: token, type: .email)
-        let userID = session.user.id.uuidString
-        if let existing = try await fetchProfile(userID: userID) {
-            return existing
-        }
-        return try await createProfile(userID: userID, email: email)
-    }
-
-    public func completeOnboarding(userID: String) async throws {
-        try await client
-            .from("user_profiles")
-            .update(OnboardingCompletionPatch())
-            .eq("id", value: userID)
-            .execute()
-    }
-
     // MARK: - Profile helpers
 
     private func fetchProfile(userID: String) async throws -> UserProfile? {
@@ -183,13 +166,5 @@ private struct NewHealthProfileInsert: Encodable {
     enum CodingKeys: String, CodingKey {
         case userId = "user_id"
         case experienceLevel = "experience_level"
-    }
-}
-
-private struct OnboardingCompletionPatch: Encodable {
-    let onboardingCompleted = true
-
-    enum CodingKeys: String, CodingKey {
-        case onboardingCompleted = "onboarding_completed"
     }
 }
