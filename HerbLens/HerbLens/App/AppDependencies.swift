@@ -39,10 +39,19 @@ public extension AppDependencies {
         healthProfile: MockServices.HealthProfileRepo()
     )
 
-    /// Supabase-backed live services. Instance 2 (Services/Live) replaces the body of this
-    /// factory with real conformances. Until then, calling `.live(...)` traps so we fail
-    /// loudly instead of shipping mocks to production.
+    /// Supabase-backed live services wired by Instance 2 (Services/Live). The provided
+    /// URL/anon-key are pinned into `SupabaseClientProvider` so a single shared client
+    /// powers every repository.
     static func live(supabaseURL: URL, supabaseAnonKey: String) -> AppDependencies {
-        fatalError("Live services will be wired by Instance 2 (Services/Live). Use AppDependencies.mock for now.")
+        SupabaseClientProvider.configure(url: supabaseURL, anonKey: supabaseAnonKey)
+        let subscriptions = RevenueCatSubscriptionService()
+        return AppDependencies(
+            auth: SupabaseAuthService(),
+            plants: SupabasePlantsRepository(),
+            scans: SupabaseScansRepository(subscriptions: subscriptions),
+            chat: SupabaseChatRepository(),
+            subscriptions: subscriptions,
+            healthProfile: SupabaseHealthProfileRepository()
+        )
     }
 }
