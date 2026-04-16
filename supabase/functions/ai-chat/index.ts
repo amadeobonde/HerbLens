@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { getAccessToken, vertexUrl, corsHeaders } from "../_shared/vertex.ts"
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -58,25 +54,25 @@ Deno.serve(async (req) => {
       healthContext = `\n\nUser health profile: Goals: ${healthProfile.health_goals?.map((g: any) => g.name).join(", ")}. Allergies: ${healthProfile.allergies?.join(", ") || "none"}. Medications: ${healthProfile.medications?.join(", ") || "none"}. Conditions: ${healthProfile.conditions?.join(", ") || "none"}.`
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
-
     const systemInstruction = `You are Bamboo, a friendly and knowledgeable herbal medicine expert panda. You help users learn about herbs, teas, tinctures, and natural remedies. Warn about contraindications and drug interactions. Be warm but scientifically accurate. Prefer plain, encouraging language over jargon.${plantContext}${healthContext}`
 
-    // Convert OpenAI-style messages -> Gemini contents
     const contents = messages.map((m: any) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: typeof m.content === "string" ? m.content : JSON.stringify(m.content) }],
     }))
 
-    const shouldStream = stream !== false // default to streaming
+    const token = await getAccessToken()
+    const shouldStream = stream !== false
     const method = shouldStream ? "streamGenerateContent" : "generateContent"
-    const suffix = shouldStream ? "&alt=sse" : ""
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:${method}?key=${geminiKey}${suffix}`
+    const suffix = shouldStream ? "?alt=sse" : ""
+    const endpoint = vertexUrl("gemini-2.5-flash", method) + suffix
 
     const upstream = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         systemInstruction: { role: "user", parts: [{ text: systemInstruction }] },
         contents,
@@ -86,7 +82,7 @@ Deno.serve(async (req) => {
 
     if (!upstream.ok) {
       const errText = await upstream.text()
-      throw new Error(`Gemini error ${upstream.status}: ${errText}`)
+      throw new Error(`Vertex error ${upstream.status}: ${errText}`)
     }
 
     if (!shouldStream) {
@@ -98,7 +94,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Relay SSE stream to the client, reshaping each chunk to { delta: "..." }
     const { readable, writable } = new TransformStream()
     const writer = writable.getWriter()
     const encoder = new TextEncoder()

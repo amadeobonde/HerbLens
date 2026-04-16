@@ -1,9 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { getAccessToken, vertexUrl, corsHeaders } from "../_shared/vertex.ts"
 
 const IDENTIFY_SCHEMA = {
   type: "object",
@@ -43,19 +39,20 @@ Deno.serve(async (req) => {
       )
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
-
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`
+    const token = await getAccessToken()
+    const endpoint = vertexUrl("gemini-2.5-flash", "generateContent")
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         systemInstruction: {
           role: "user",
           parts: [{
-            text: "You are a botanical expert. Identify the plant in the image. Return the top match plus up to 2 alternate candidates when confidence < 0.75. Always be precise and conservative with confidence. Never fabricate scientific names.",
+            text: "You are a botanical expert. Identify the plant in the image. Return the top match plus up to 2 alternate candidates when confidence < 0.75. Be precise and conservative with confidence. Never fabricate scientific names.",
           }],
         },
         contents: [{
@@ -75,7 +72,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errText = await response.text()
-      throw new Error(`Gemini error ${response.status}: ${errText}`)
+      throw new Error(`Vertex error ${response.status}: ${errText}`)
     }
 
     const result = await response.json()

@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { getAccessToken, vertexUrl, corsHeaders } from "../_shared/vertex.ts"
 
 const HEALTH_SCORE_SCHEMA = {
   type: "object",
@@ -77,14 +73,15 @@ Deno.serve(async (req) => {
     const plant = plantResult.data
     const healthProfile = profileResult.data
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
-
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`
+    const token = await getAccessToken()
+    const endpoint = vertexUrl("gemini-2.5-flash", "generateContent")
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         systemInstruction: {
           role: "user",
@@ -106,7 +103,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errText = await response.text()
-      throw new Error(`Gemini error ${response.status}: ${errText}`)
+      throw new Error(`Vertex error ${response.status}: ${errText}`)
     }
 
     const result = await response.json()

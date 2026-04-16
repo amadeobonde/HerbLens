@@ -1,14 +1,10 @@
-// Nano Banana — Google's image generation + edit model (gemini-2.5-flash-image).
+// Nano Banana — Google's image generation + edit model (gemini-2.5-flash-image) on Vertex AI.
 // Use for static imagery: collection covers, recipe hero shots, mascot variants,
 // empty-state art. Returns a base64 PNG that the iOS app can persist or display.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { getAccessToken, vertexUrl, corsHeaders } from "../_shared/vertex.ts"
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -40,9 +36,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
-
     const parts: any[] = [{ text: prompt }]
     if (reference_image_base64) {
       parts.push({
@@ -53,11 +46,15 @@ Deno.serve(async (req) => {
       })
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`
+    const token = await getAccessToken()
+    const endpoint = vertexUrl("gemini-2.5-flash-image", "generateContent")
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
       }),
@@ -65,7 +62,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errText = await response.text()
-      throw new Error(`Nano Banana error ${response.status}: ${errText}`)
+      throw new Error(`Nano Banana (Vertex) error ${response.status}: ${errText}`)
     }
 
     const result = await response.json()

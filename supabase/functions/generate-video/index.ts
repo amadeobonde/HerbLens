@@ -1,19 +1,15 @@
-// Veo 3 — Google's video generation model (veo-3.0-generate-001).
+// Veo 3 — Google's video generation model (veo-3.0-generate-001) on Vertex AI.
 // Use for short animated clips: onboarding hero, scan celebration, loading loops.
 //
 // Two endpoints:
 //   POST /generate-video           → { prompt, aspect_ratio?, duration_seconds? } → { operation_name }
 //   POST /generate-video?poll=1    → { operation_name }                          → { status, video_url? }
 //
-// Veo is async: kick off a generation, poll until done, then fetch the video URL.
+// Veo is async on Vertex: kick off with :predictLongRunning, poll with :fetchPredictOperation.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { getAccessToken, vertexUrl, corsHeaders } from "../_shared/vertex.ts"
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,9 +33,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!geminiKey) throw new Error("GEMINI_API_KEY not configured")
-
+    const token = await getAccessToken()
     const url = new URL(req.url)
     const isPoll = url.searchParams.get("poll") === "1"
 
@@ -51,22 +45,32 @@ Deno.serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         )
       }
-      const pollEndpoint = `https://generativelanguage.googleapis.com/v1beta/${operation_name}?key=${geminiKey}`
-      const poll = await fetch(pollEndpoint)
+      // Vertex long-running pattern: POST to :fetchPredictOperation on the same model
+      const pollEndpoint = vertexUrl("veo-3.0-generate-001", "fetchPredictOperation")
+      const poll = await fetch(pollEndpoint, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ operationName: operation_name }),
+      })
       if (!poll.ok) {
         const errText = await poll.text()
         throw new Error(`Veo poll error ${poll.status}: ${errText}`)
       }
       const op = await poll.json()
       const done = Boolean(op.done)
-      const videos = op.response?.generateVideoResponse?.generatedSamples
-        ?? op.response?.generatedVideos
-        ?? []
-      const videoUri = videos[0]?.video?.uri ?? videos[0]?.videoUri ?? null
+      // Vertex Veo responses contain either base64 video bytes or a GCS URI
+      const videos = op.response?.videos ?? op.response?.generatedSamples ?? []
+      const video = videos[0] ?? null
+      const videoBase64 = video?.bytesBase64Encoded ?? null
+      const videoUri = video?.gcsUri ?? null
       return new Response(
         JSON.stringify({
           status: done ? "done" : "running",
-          video_url: videoUri ? `${videoUri}&key=${geminiKey}` : null,
+          video_base64: videoBase64,
+          video_gcs_uri: videoUri,
           error: op.error ?? null,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -81,11 +85,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.0-generate-001:predictLongRunning?key=${geminiKey}`
+    const endpoint = vertexUrl("veo-3.0-generate-001", "predictLongRunning")
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         instances: [{ prompt }],
         parameters: {
