@@ -66,4 +66,19 @@ private enum PreviewHelpers {
 #Preview("Loading") {
     ScanLoadingView()
 }
+
+#Preview("Loading — with capture") {
+    ScanLoadingView(capturedImage: PreviewHelpers.bambooImage())
+}
+
+#Preview("Error — retriable") {
+    ScanErrorView(
+        error: ScanDisplayError(
+            title: "Identification failed",
+            message: "We couldn't reach the identification service. Try another photo or check your connection.",
+            retriable: true
+        ),
+        onDismiss: {}
+    )
+}
 #endif

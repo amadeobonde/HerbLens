@@ -1,50 +1,97 @@
 import SwiftUI
 
-/// Paywall CTA shown when a free-tier user has hit the daily scan cap.
+/// Paywall CTA shown when a free-tier user has hit the daily scan cap. Sleeping
+/// Bamboo + offering tease card with the Apothecary scene + a `PrimaryButton` that
+/// hands off to the dedicated paywall flow.
 struct QuotaReachedView: View {
     let limit: Int
     let onPaywall: () -> Void
     let onDismiss: () -> Void
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             Theme.Color.background.ignoresSafeArea()
 
-            VStack(spacing: Theme.Spacing.lg) {
-                Image(systemName: "moon.stars.fill")
-                    .font(.system(size: 72))
-                    .foregroundStyle(Theme.Color.forest)
-                    .padding(Theme.Spacing.xl)
-                    .background(Circle().fill(Theme.Color.bone.opacity(0.8)))
+            ScrollView {
+                VStack(spacing: Theme.Spacing.lg) {
+                    MascotBadge(.sleeping, size: 160)
+                        .padding(.top, Theme.Spacing.xl)
 
-                VStack(spacing: Theme.Spacing.xs) {
-                    Text("That's your \(limit) for today")
-                        .font(Theme.Font.title)
+                    VStack(spacing: Theme.Spacing.xs) {
+                        Text("That's your \(limit) for today")
+                            .font(Theme.Font.title)
+                            .foregroundStyle(Theme.Color.textPrimary)
+                            .multilineTextAlignment(.center)
+
+                        Text("Bamboo is napping. Premium keeps the scanner open all day.")
+                            .font(Theme.Font.body)
+                            .foregroundStyle(Theme.Color.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, Theme.Spacing.lg)
+                    }
+
+                    teaseCard
+                        .padding(.horizontal, Theme.Spacing.md)
+
+                    Color.clear.frame(height: 140)
+                }
+            }
+
+            stickyActions
+        }
+    }
+
+    private var teaseCard: some View {
+        GlassCard(tone: .modal) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                HeroPhoto(named: "Scenes/Apothecary", height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+                    Text("Premium unlocks")
+                        .font(Theme.Font.headline)
                         .foregroundStyle(Theme.Color.textPrimary)
-                        .multilineTextAlignment(.center)
-
-                    Text("Premium unlocks unlimited scans, AI chat with Bamboo, and full recipes.")
+                    Text("Unlimited scans, AI chat with Bamboo, and the full apothecary of brews and tinctures.")
                         .font(Theme.Font.body)
                         .foregroundStyle(Theme.Color.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Theme.Spacing.lg)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Button(action: onPaywall) {
-                    Text("Go Premium")
-                        .font(Theme.Font.headline)
-                        .foregroundStyle(Theme.Color.bone)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.Spacing.sm)
-                        .background(Capsule().fill(Theme.Color.forest))
+                VStack(spacing: Theme.Spacing.xs) {
+                    perkRow(icon: Theme.Icon.scan, text: "Unlimited daily scans")
+                    perkRow(icon: Theme.Icon.chat, text: "AI chat with Bamboo")
+                    perkRow(icon: Theme.Icon.recipes, text: "Full recipe & tincture library")
                 }
-                .padding(.horizontal, Theme.Spacing.lg)
-
-                Button("Come back tomorrow", action: onDismiss)
-                    .font(Theme.Font.callout)
-                    .foregroundStyle(Theme.Color.textSecondary)
             }
-            .padding(Theme.Spacing.xl)
         }
+    }
+
+    private func perkRow(icon: String, text: String) -> some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Image(systemName: icon)
+                .foregroundStyle(Theme.Color.sage)
+                .frame(width: 22)
+            Text(text)
+                .font(Theme.Font.callout)
+                .foregroundStyle(Theme.Color.textPrimary)
+            Spacer()
+        }
+    }
+
+    private var stickyActions: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            PrimaryButton("Unlock unlimited", action: onPaywall)
+            PrimaryButton("Come back tomorrow", variant: .ghost, action: onDismiss)
+        }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm)
+        .background(
+            Color.clear
+                .glass(.subtle)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
+        )
+        .shadow(Theme.Shadow.float)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.lg)
     }
 }
