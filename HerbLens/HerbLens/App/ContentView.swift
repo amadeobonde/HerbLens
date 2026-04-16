@@ -27,19 +27,22 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
-                HomeTabPlaceholder(showPaywall: triggerPaywallStub)
+                HomeView()
             }
 
             Tab("Scan", systemImage: Theme.Icon.scan, value: AppTab.scan) {
-                ScanTabPlaceholder(showPaywall: triggerPaywallStub)
+                ScanView(
+                    onOpenVault: { @Sendable in Task { @MainActor in selection = .vault } },
+                    onPaywall: { @Sendable in Task { @MainActor in showPaywallStub = true } }
+                )
             }
 
             Tab("Recipes", systemImage: Theme.Icon.recipes, value: AppTab.recipes) {
-                RecipesTabPlaceholder(showPaywall: triggerPaywallStub)
+                RecipesHomeView()
             }
 
             Tab("Vault", systemImage: Theme.Icon.vault, value: AppTab.vault) {
-                VaultTabPlaceholder(showPaywall: triggerPaywallStub)
+                VaultHomeView(herbs: [], brews: [])
             }
 
             Tab("Profile", systemImage: Theme.Icon.profile, value: AppTab.profile) {
