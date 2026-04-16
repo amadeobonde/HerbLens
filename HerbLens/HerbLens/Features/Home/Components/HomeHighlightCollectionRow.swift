@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// One row per `HighlightCollection`: cover art on the left, title + subtitle, and
-/// a horizontal scroll of plant cards. The cover image comes from the asset catalog
-/// when present, else falls back to an SF Symbol via `HomeCollectionCoverProvider`.
+/// One row per `HighlightCollection`. A `SectionHeader` shows the collection title
+/// with a small accessory bringing in the cover art; below it, a horizontal scroll
+/// of plant cards. The cover image comes from the asset catalog when present, else
+/// falls back to an SF Symbol via `HomeCollectionCoverProvider`.
 ///
 /// Named with the `Home` prefix to avoid collisions with similarly-named row types
 /// other instances may declare.
@@ -13,7 +14,22 @@ struct HomeHighlightCollectionRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            header
+            SectionHeader(collection.title) {
+                HomeCollectionCoverProvider.image(for: collection)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 40, height: 40)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous)
+                            .stroke(Theme.Color.sage.opacity(0.25), lineWidth: 0.5)
+                    )
+            }
+
+            Text(collection.subtitle)
+                .font(Theme.Font.caption)
+                .foregroundStyle(Theme.Color.textSecondary)
+                .lineLimit(2)
                 .padding(.horizontal, Theme.Spacing.md)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -22,7 +38,10 @@ struct HomeHighlightCollectionRow: View {
                         Button {
                             onSelect(plant)
                         } label: {
-                            PlantCardView(plant: plant, width: 132)
+                            GlassCard(tone: .subtle) {
+                                PlantCardView(plant: plant, width: 132)
+                            }
+                            .frame(width: 132 + Theme.Spacing.md * 2)
                         }
                         .buttonStyle(.plain)
                     }
@@ -30,32 +49,6 @@ struct HomeHighlightCollectionRow: View {
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.xs)
             }
-        }
-    }
-
-    private var header: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            HomeCollectionCoverProvider.image(for: collection)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 56, height: 72)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(Theme.Color.sage.opacity(0.25), lineWidth: 0.5)
-                )
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(collection.title)
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.textPrimary)
-                    .lineLimit(1)
-                Text(collection.subtitle)
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(Theme.Color.textSecondary)
-                    .lineLimit(2)
-            }
-            Spacer(minLength: 0)
         }
     }
 }

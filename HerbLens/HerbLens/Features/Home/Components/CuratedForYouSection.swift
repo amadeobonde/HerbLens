@@ -11,22 +11,18 @@ struct CuratedForYouSection: View {
     var body: some View {
         if !collections.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                HStack(spacing: Theme.Spacing.xs) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(Theme.Color.amber)
-                    Text("Curated for you")
-                        .font(Theme.Font.headline)
-                        .foregroundStyle(Theme.Color.textPrimary)
-                    Spacer(minLength: 0)
-                    Text("Premium")
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(Theme.Color.bone)
-                        .padding(.horizontal, Theme.Spacing.xs)
-                        .padding(.vertical, 3)
-                        .background(Theme.Color.forest, in: Capsule())
+                SectionHeader("Curated for you") {
+                    HStack(spacing: Theme.Spacing.xs) {
+                        Image(systemName: Theme.Icon.paywall)
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Premium")
+                            .font(Theme.Font.caption)
+                    }
+                    .foregroundStyle(Theme.Color.bone)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, 4)
+                    .background(Theme.Color.forest, in: Capsule())
                 }
-                .padding(.horizontal, Theme.Spacing.md)
 
                 ForEach(collections) { collection in
                     HomeHighlightCollectionRow(
@@ -38,7 +34,7 @@ struct CuratedForYouSection: View {
             }
             .padding(.vertical, Theme.Spacing.sm)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous)
                     .fill(Theme.Color.sage.opacity(0.08))
                     .padding(.horizontal, Theme.Spacing.xs)
             )

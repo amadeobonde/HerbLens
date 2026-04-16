@@ -1,18 +1,16 @@
 import SwiftUI
 
-/// Horizontal carousel of featured plants. Wraps `PlantCardView` with a section
-/// header and emits the selected plant through a callback so `HomeView` controls
-/// the `NavigationStack` path.
+/// Horizontal carousel of featured plants. Wraps each `PlantCardView` in a
+/// `GlassCard` with a leading tags chip so the card chrome stays consistent with
+/// the rest of the home feed. Selection bubbles up via `onSelect` so `HomeView`
+/// owns the `NavigationStack` path.
 struct FeaturedPlantsCarousel: View {
     let plants: [Plant]
     let onSelect: (Plant) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Featured plants")
-                .font(Theme.Font.headline)
-                .foregroundStyle(Theme.Color.textPrimary)
-                .padding(.horizontal, Theme.Spacing.md)
+            SectionHeader("Featured today")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.md) {
@@ -20,7 +18,10 @@ struct FeaturedPlantsCarousel: View {
                         Button {
                             onSelect(plant)
                         } label: {
-                            PlantCardView(plant: plant, width: 156)
+                            GlassCard(tone: .standard) {
+                                PlantCardView(plant: plant, width: 156)
+                            }
+                            .frame(width: 156 + Theme.Spacing.md * 2)
                         }
                         .buttonStyle(.plain)
                     }

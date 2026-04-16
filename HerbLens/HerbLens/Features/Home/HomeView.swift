@@ -8,6 +8,9 @@ public struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var viewModel: HomeViewModel?
     @State private var path: [HomeRoute] = []
+    /// Total mascot rotation in degrees. Bumped by 360 on each pull-to-refresh so the
+    /// header Bamboo spins one full turn via `Theme.Motion.snappy`.
+    @State private var mascotRotation: Double = 0
 
     public init() {}
 
@@ -66,7 +69,7 @@ public struct HomeView: View {
 
     private func errorView(message: String) -> some View {
         VStack(spacing: Theme.Spacing.md) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            Image(systemName: Theme.Icon.error)
                 .font(.system(size: 32))
                 .foregroundStyle(Theme.Color.ember)
             Text("Couldn't load Home")
@@ -77,17 +80,10 @@ public struct HomeView: View {
                 .foregroundStyle(Theme.Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.Spacing.lg)
-            Button {
-                Task { await viewModel?.load() }
-            } label: {
-                Text("Retry")
-                    .font(Theme.Font.callout)
-                    .foregroundStyle(Theme.Color.bone)
-                    .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.vertical, Theme.Spacing.xs)
-                    .background(Theme.Color.forest, in: Capsule())
+            PrimaryButton("Retry") {
+                Task { @MainActor in await viewModel?.load() }
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Theme.Spacing.xl)
         }
         .frame(maxWidth: .infinity)
         .padding(.top, Theme.Spacing.xl)
@@ -97,18 +93,31 @@ public struct HomeView: View {
     private func loadedView(_ data: HomeData) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                HomeGreetingHeader(rotation: mascotRotation)
+                    .padding(.top, Theme.Spacing.xs)
+
                 ScanCTAButton {
                     // Scan flow lives in Instance 5. Wiring requires a destination
                     // type owned by Scan — intentionally out of scope here.
                 }
                 .padding(.horizontal, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.lg)
+
+                HomeQuickActionsRow(
+                    onScan: {},
+                    onRecipes: {},
+                    onVault: {},
+                    onChat: {}
+                )
 
                 if !data.featured.isEmpty {
                     FeaturedPlantsCarousel(plants: data.featured) { plant in
                         path.append(.plant(id: plant.id))
                     }
                 }
+
+                MadeThisWeekRow(onBrowseRecipes: { @Sendable in
+                    // Recipes tab routing belongs to Instance 7. Placeholder closure for now.
+                })
 
                 RecentlyScannedRow(
                     recents: data.recents,
@@ -139,6 +148,9 @@ public struct HomeView: View {
             }
         }
         .refreshable {
+            withAnimation(Theme.Motion.snappy) {
+                mascotRotation += 360
+            }
             await viewModel?.refresh()
         }
     }
