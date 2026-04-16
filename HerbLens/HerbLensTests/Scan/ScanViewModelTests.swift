@@ -79,7 +79,8 @@ struct ScanViewModelTests {
             return
         }
         #expect(limit == 3)
-        #expect(plants.searchCount == 0)
+        let count = await plants.searchCount
+        #expect(count == 0)
     }
 
     @Test("save constructs a Scan echoing the selected plant + confidence")
@@ -166,12 +167,15 @@ private nonisolated struct StubScans: ScansRepository {
     func delete(scanID: String) async throws {}
 }
 
+private actor SearchCounter {
+    private(set) var value: Int = 0
+    func increment() { value += 1 }
+}
+
 private final class CountingPlants: PlantsRepository, @unchecked Sendable {
-    private let lock = NSLock()
-    private var _searchCount = 0
+    private let counter = SearchCounter()
     var searchCount: Int {
-        lock.lock(); defer { lock.unlock() }
-        return _searchCount
+        get async { await counter.value }
     }
 
     nonisolated init() {}
@@ -179,7 +183,7 @@ private final class CountingPlants: PlantsRepository, @unchecked Sendable {
     func featured() async throws -> [Plant] { [] }
     func plant(id: String) async throws -> Plant { SampleData.chamomile }
     func search(query: String) async throws -> [Plant] {
-        lock.lock(); _searchCount += 1; lock.unlock()
+        await counter.increment()
         return []
     }
     func healthScore(for plantID: String, userID: String) async throws -> HealthScore {
