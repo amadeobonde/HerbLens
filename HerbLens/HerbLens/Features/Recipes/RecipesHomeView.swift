@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Root view for the Brew tab. Loads recipes via `PlantsRepository.featured()`,
 /// falls back to `RecipePreviewFixtures.allRecipes` in Xcode Previews, and
-/// splits the browse surface into filter chips + teas grid + tinctures grid.
+/// splits the browse surface into a brewing mascot header, filter chips, and
+/// two `GlassCard`-grid sections (Teas / Tinctures).
 struct RecipesHomeView: View {
     enum Filter: Hashable, CaseIterable {
         case all, teas, tinctures
@@ -18,6 +19,7 @@ struct RecipesHomeView: View {
 
     @Environment(\.dependencies) private var dependencies
     @State private var recipes: [Recipe] = []
+    @State private var isLoading: Bool = true
     @State private var filter: Filter = .all
     @State private var tier: SubscriptionTier = .free
     @State private var selectedRecipe: Recipe?
@@ -30,34 +32,16 @@ struct RecipesHomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                    header
-                    filterChips
-                    if teasVisible, !teas.isEmpty {
-                        sectionHeader("Teas")
-                        teasGrid
-                    }
-                    if tincturesVisible, !tinctures.isEmpty {
-                        sectionHeader("Tinctures")
-                        tincturesGrid
-                    }
-                    if recipes.isEmpty {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding(Theme.Spacing.xl)
-                    }
+            Group {
+                if isLoading && recipes.isEmpty {
+                    loadingState
+                } else if recipes.isEmpty {
+                    emptyState
+                } else {
+                    contentScroll
                 }
-                .padding(Theme.Spacing.md)
             }
-            .background(
-                LinearGradient(
-                    colors: [Theme.Color.sage.opacity(0.15), Theme.Color.bone],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            )
+            .background(backdrop)
             .navigationDestination(item: $selectedRecipe) { recipe in
                 RecipeDetailView(
                     recipe: recipe,
@@ -82,22 +66,53 @@ struct RecipesHomeView: View {
 
     // MARK: - Subviews
 
+    private var backdrop: some View {
+        LinearGradient(
+            colors: [Theme.Color.sage.opacity(0.18), Theme.Color.bone],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+
+    private var contentScroll: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                header
+                filterChips
+                if teasVisible, !teas.isEmpty {
+                    SectionHeader("Teas")
+                    teasGrid
+                }
+                if tincturesVisible, !tinctures.isEmpty {
+                    SectionHeader("Tinctures")
+                    tincturesGrid
+                }
+            }
+            .padding(.vertical, Theme.Spacing.md)
+            .padding(.horizontal, Theme.Spacing.sm)
+        }
+    }
+
     private var header: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+        VStack(spacing: Theme.Spacing.xs) {
+            MascotBadge(.brewing, size: 120)
             Text("Brew, sip, learn")
                 .font(Theme.Font.display)
                 .foregroundStyle(Theme.Color.textPrimary)
-            Text("Step-by-step teas and tinctures, paired to your plants.")
+            Text("Pick a brew, follow along.")
                 .font(Theme.Font.body)
                 .foregroundStyle(Theme.Color.textSecondary)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Theme.Spacing.md)
     }
 
     private var filterChips: some View {
         HStack(spacing: Theme.Spacing.xs) {
             ForEach(Filter.allCases, id: \.self) { option in
                 Button {
-                    filter = option
+                    withAnimation(Theme.Motion.snappy) { filter = option }
                 } label: {
                     Text(option.title)
                         .font(Theme.Font.callout)
@@ -112,6 +127,7 @@ struct RecipesHomeView: View {
             }
             Spacer(minLength: 0)
         }
+        .padding(.horizontal, Theme.Spacing.md)
     }
 
     private var teasGrid: some View {
@@ -123,6 +139,7 @@ struct RecipesHomeView: View {
                 .buttonStyle(.plain)
             }
         }
+        .padding(.horizontal, Theme.Spacing.sm)
     }
 
     private var tincturesGrid: some View {
@@ -134,17 +151,34 @@ struct RecipesHomeView: View {
                 .buttonStyle(.plain)
             }
         }
+        .padding(.horizontal, Theme.Spacing.sm)
     }
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
-            .font(Theme.Font.title)
-            .foregroundStyle(Theme.Color.textPrimary)
+    private var loadingState: some View {
+        EmptyStateView(
+            mascot: .brewing,
+            title: "Warming the kettle",
+            subtitle: "Pulling today's brews from the apothecary."
+        )
+    }
+
+    private var emptyState: some View {
+        EmptyStateView(
+            mascot: .sleeping,
+            title: "No brews yet",
+            subtitle: "We'll pour new recipes here as soon as they land.",
+            ctaTitle: "Try again",
+            action: {
+                Task { await loadRecipes() }
+            }
+        )
     }
 
     // MARK: - Data
 
     private func loadRecipes() async {
+        isLoading = true
+        defer { isLoading = false }
         do {
             let plants = try await dependencies.plants.featured()
             let serverRecipes = plants.flatMap(\.recipes)

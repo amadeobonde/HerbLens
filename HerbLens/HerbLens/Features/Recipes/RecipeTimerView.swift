@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Live countdown surfaced inside `RecipeDetailView` whenever a tea's
-/// `steepOrCureTime` parses to a live-timer minute count. Tincture cures
-/// (weeks/days) never reach this view.
+/// Standalone live countdown, retained for contexts (previews, future ad-hoc
+/// placements) that want a timer outside the Duolingo player. The player
+/// itself draws the timer inline via `RingMetric` + `PrimaryButton`. Rendered
+/// inside a `GlassCard(.standard)` with design-system motion/shadow tokens.
 struct RecipeTimerView: View {
     @State private var model: RecipeTimerModel
 
@@ -11,40 +12,31 @@ struct RecipeTimerView: View {
     }
 
     var body: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            ZStack {
-                Circle()
-                    .stroke(Theme.Color.sage.opacity(0.2), lineWidth: 6)
-                Circle()
-                    .trim(from: 0, to: model.progress)
-                    .stroke(Theme.Color.forest, style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 0.2), value: model.progress)
-                VStack(spacing: 2) {
-                    Text(model.formatted)
-                        .font(Theme.Font.captionMono)
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.Color.textPrimary)
-                        .font(.system(size: 28, weight: .regular, design: .monospaced))
-                    Text(label)
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(Theme.Color.textSecondary)
-                }
-            }
-            .frame(width: 120, height: 120)
+        GlassCard(tone: .standard) {
+            VStack(spacing: Theme.Spacing.md) {
+                RingMetric(
+                    value: Double(model.totalSeconds - model.remainingSeconds),
+                    total: Double(model.totalSeconds),
+                    label: model.formatted,
+                    color: model.state == .completed ? Theme.Color.sage : Theme.Color.forest,
+                    size: 140
+                )
 
-            HStack(spacing: Theme.Spacing.md) {
-                controlButton
-                Button(action: model.reset) {
-                    Label("Reset", systemImage: "arrow.counterclockwise")
+                Text(label)
+                    .font(Theme.Font.caption)
+                    .foregroundStyle(Theme.Color.textSecondary)
+
+                HStack(spacing: Theme.Spacing.sm) {
+                    controlButton
+                    PrimaryButton("Reset", variant: .ghost) {
+                        RecipeHaptics.tick()
+                        model.reset()
+                    }
+                    .frame(maxWidth: 140)
                 }
-                .buttonStyle(.bordered)
-                .tint(Theme.Color.forest)
             }
         }
-        .padding(Theme.Spacing.md)
-        .frame(maxWidth: .infinity)
-        .glass(.card)
+        .shadow(Theme.Shadow.card)
     }
 
     private var label: String {
@@ -59,26 +51,20 @@ struct RecipeTimerView: View {
     @ViewBuilder private var controlButton: some View {
         switch model.state {
         case .idle, .paused:
-            Button(action: {
+            PrimaryButton("Start") {
                 RecipeHaptics.start()
                 model.start()
-            }) {
-                Label("Start", systemImage: "play.fill")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.Color.forest)
         case .running:
-            Button(action: model.pause) {
-                Label("Pause", systemImage: "pause.fill")
+            PrimaryButton("Pause", variant: .ghost) {
+                RecipeHaptics.tick()
+                model.pause()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.Color.amber)
         case .completed:
-            Button(action: model.reset) {
-                Label("Again", systemImage: "arrow.counterclockwise")
+            PrimaryButton("Again") {
+                RecipeHaptics.finish()
+                model.reset()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.Color.sage)
         }
     }
 }

@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Inline upsell shown in place of locked recipe content. Keeps the visual
-/// weight consistent whether gating a single step (tea) or an entire detail
-/// view (tincture).
+/// Inline upsell shown in place of locked recipe content. Uses a `GlassCard`
+/// at modal tone so the lock visually separates from surrounding ingredient
+/// / step cards, and pairs the headline with a `PrimaryButton` (filled, ember)
+/// so the trial CTA reads consistently with the rest of the app.
 struct RecipePremiumLock: View {
     enum Scope: Hashable {
         case teaSteps
@@ -13,32 +14,26 @@ struct RecipePremiumLock: View {
     let onTapUpgrade: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            HStack(spacing: Theme.Spacing.xs) {
-                Image(systemName: "lock.fill")
-                    .foregroundStyle(Theme.Color.amber)
-                Text(headline)
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.textPrimary)
-            }
-            Text(body(for: scope))
-                .font(Theme.Font.callout)
-                .foregroundStyle(Theme.Color.textSecondary)
-            Button(action: onTapUpgrade) {
-                Text("Start 7-day free trial")
+        GlassCard(tone: .modal) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "lock.fill")
+                        .foregroundStyle(Theme.Color.amber)
+                    Text(headline)
+                        .font(Theme.Font.headline)
+                        .foregroundStyle(Theme.Color.textPrimary)
+                }
+                Text(body(for: scope))
                     .font(Theme.Font.callout)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Theme.Color.bone)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .background(Theme.Color.ember, in: .capsule)
+                    .foregroundStyle(Theme.Color.textSecondary)
+                PrimaryButton("Start 7-day free trial") {
+                    RecipeHaptics.tick()
+                    onTapUpgrade()
+                }
+                .accessibilityLabel("Start 7-day free trial")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Start 7-day free trial")
         }
-        .padding(Theme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glass(.modal)
+        .shadow(Theme.Shadow.modal)
     }
 
     private var headline: String {

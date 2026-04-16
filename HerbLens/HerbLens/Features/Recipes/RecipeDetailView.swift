@@ -1,63 +1,113 @@
 import SwiftUI
 
-/// Full brew-card detail. Tea recipes show hero + metadata + ingredients
-/// (always) and gate steps/timer behind premium. Tinctures are fully locked
-/// for free users — the hero + metadata tease, a `.fullTincture` upsell
-/// replaces the body.
+/// Full brew-card detail. Tea recipes show hero + ingredients (always) and a
+/// collapsed preview of the steps gated behind premium. Tinctures are fully
+/// locked for free users. Unlocked recipes offer a `PrimaryButton("Start brewing")`
+/// that presents the Duolingo-style `RecipePlayerView`.
 struct RecipeDetailView: View {
     let recipe: Recipe
     let isUnlocked: Bool
     let madeStore: MadeRecipesStore
     let onTapUpgrade: () -> Void
 
+    @State private var showingPlayer: Bool = false
+    @State private var showingFinish: Bool = false
+    @State private var finishedState: RecipePlayerState?
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                hero
-                metadataRow
+                heroBlock
+
+                GlassCard(tone: .subtle) {
+                    metadataRow
+                }
+                .padding(.horizontal, Theme.Spacing.md)
+
                 if shouldLockEverything {
                     RecipePremiumLock(scope: .fullTincture, onTapUpgrade: onTapUpgrade)
+                        .padding(.horizontal, Theme.Spacing.md)
                 } else {
                     ingredientsSection
+                        .padding(.horizontal, Theme.Spacing.md)
                     stepsSection
-                    if let minutes = SteepDurationParser.minutes(from: recipe.steepOrCureTime), isUnlocked {
-                        RecipeTimerView(totalMinutes: minutes)
+                        .padding(.horizontal, Theme.Spacing.md)
+                    if isUnlocked {
+                        PrimaryButton("Start brewing") {
+                            RecipeHaptics.start()
+                            showingPlayer = true
+                        }
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .shadow(Theme.Shadow.float)
                     }
                 }
             }
-            .padding(Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.md)
         }
-        .background(Theme.Color.bone)
+        .background(backdrop)
         .navigationTitle(recipe.title)
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $showingPlayer) {
+            NavigationStack {
+                RecipePlayerView(
+                    recipe: recipe,
+                    onFinish: { state in
+                        finishedState = state
+                        showingPlayer = false
+                        showingFinish = true
+                    },
+                    onClose: {
+                        showingPlayer = false
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $showingFinish) {
+            finishedState = nil
+        } content: {
+            RecipeFinishView(
+                recipe: recipe,
+                madeStore: madeStore,
+                onSaved: { _ in },
+                onDismiss: { showingFinish = false }
+            )
+        }
     }
 
     private var shouldLockEverything: Bool {
         recipe.type == .tincture && !isUnlocked
     }
 
-    private var hero: some View {
-        Group {
-            if let image = RecipeImageLookup.image(for: recipe) {
-                image
-                    .resizable()
-                    .aspectRatio(3 / 2, contentMode: .fill)
-            } else {
+    private var backdrop: some View {
+        LinearGradient(
+            colors: [Theme.Color.sage.opacity(0.18), Theme.Color.bone],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+
+    // MARK: - Hero
+
+    @ViewBuilder
+    private var heroBlock: some View {
+        if let slug = RecipeImageLookup.assetName(for: recipe) {
+            HeroPhoto(named: "Recipes/\(slug)", height: 260)
+        } else {
+            ZStack {
                 LinearGradient(
                     colors: [Theme.Color.sage.opacity(0.7), Theme.Color.forest],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
-                .aspectRatio(3 / 2, contentMode: .fill)
-                .overlay {
-                    Image(systemName: recipe.type == .tea ? "cup.and.saucer.fill" : "drop.fill")
-                        .font(.system(size: 56))
-                        .foregroundStyle(Theme.Color.bone.opacity(0.3))
-                }
+                Image(systemName: recipe.type == .tea ? "cup.and.saucer.fill" : "drop.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(Theme.Color.bone.opacity(0.35))
             }
+            .frame(height: 260)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
+            .padding(.horizontal, Theme.Spacing.md)
         }
-        .frame(maxWidth: .infinity)
-        .clipShape(.rect(cornerRadius: 20))
     }
 
     private var metadataRow: some View {
@@ -65,10 +115,14 @@ struct RecipeDetailView: View {
             HStack(spacing: Theme.Spacing.xs) {
                 metaChip(icon: "clock", label: "Prep", value: recipe.prepTime)
                 if let steep = recipe.steepOrCureTime {
-                    metaChip(icon: "timer", label: recipe.type == .tea ? "Steep" : "Cure", value: steep)
+                    metaChip(icon: Theme.Icon.timer,
+                             label: recipe.type == .tea ? "Steep" : "Cure",
+                             value: steep)
                 }
                 metaChip(icon: "drop", label: "Yield", value: recipe.yield)
-                metaChip(icon: "graduationcap", label: "Level", value: recipe.difficulty.rawValue.capitalized)
+                metaChip(icon: "graduationcap",
+                         label: "Level",
+                         value: recipe.difficulty.rawValue.capitalized)
             }
         }
     }
@@ -95,19 +149,23 @@ struct RecipeDetailView: View {
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             sectionHeader("Ingredients")
-            ForEach(recipe.ingredients, id: \.name) { ingredient in
-                HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
-                    Circle()
-                        .fill(Theme.Color.sage)
-                        .frame(width: 6, height: 6)
-                    VStack(alignment: .leading) {
-                        Text("\(ingredient.amount) \(ingredient.name)")
-                            .font(Theme.Font.body)
-                            .foregroundStyle(Theme.Color.textPrimary)
-                        if let notes = ingredient.notes {
-                            Text(notes)
-                                .font(Theme.Font.caption)
-                                .foregroundStyle(Theme.Color.textSecondary)
+            GlassCard(tone: .standard) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    ForEach(recipe.ingredients, id: \.name) { ingredient in
+                        HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
+                            Circle()
+                                .fill(Theme.Color.sage)
+                                .frame(width: 6, height: 6)
+                            VStack(alignment: .leading) {
+                                Text("\(ingredient.amount) \(ingredient.name)")
+                                    .font(Theme.Font.body)
+                                    .foregroundStyle(Theme.Color.textPrimary)
+                                if let notes = ingredient.notes {
+                                    Text(notes)
+                                        .font(Theme.Font.caption)
+                                        .foregroundStyle(Theme.Color.textSecondary)
+                                }
+                            }
                         }
                     }
                 }
@@ -116,30 +174,53 @@ struct RecipeDetailView: View {
     }
 
     @ViewBuilder private var stepsSection: some View {
-        sectionHeader("Steps")
-        if isUnlocked {
-            RecipeStepsPager(
-                steps: recipe.steps,
-                isMade: madeStore.isMade(recipe.id),
-                onToggleMade: { madeStore.toggle(recipe.id) }
-            )
-        } else {
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                if let first = recipe.steps.first {
-                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                        Text("Step 1 of \(recipe.steps.count)")
-                            .font(Theme.Font.caption)
-                            .foregroundStyle(Theme.Color.textSecondary)
-                        Text(first.instruction)
-                            .font(Theme.Font.body)
-                            .foregroundStyle(Theme.Color.textPrimary)
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            sectionHeader("Steps")
+            if isUnlocked {
+                GlassCard(tone: .standard) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        ForEach(Array(recipe.steps.prefix(3).enumerated()), id: \.offset) { index, step in
+                            stepPreviewRow(index: index, step: step)
+                        }
+                        if recipe.steps.count > 3 {
+                            Text("+ \(recipe.steps.count - 3) more steps")
+                                .font(Theme.Font.caption)
+                                .foregroundStyle(Theme.Color.textSecondary)
+                        }
                     }
-                    .padding(Theme.Spacing.md)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glass(.card)
+                }
+            } else {
+                if let first = recipe.steps.first {
+                    GlassCard(tone: .standard) {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                            Text("Step 1 of \(recipe.steps.count)")
+                                .font(Theme.Font.caption)
+                                .foregroundStyle(Theme.Color.textSecondary)
+                            Text(first.instruction)
+                                .font(Theme.Font.body)
+                                .foregroundStyle(Theme.Color.textPrimary)
+                        }
+                    }
                 }
                 RecipePremiumLock(scope: .teaSteps, onTapUpgrade: onTapUpgrade)
             }
+        }
+    }
+
+    private func stepPreviewRow(index: Int, step: RecipeStep) -> some View {
+        HStack(alignment: .top, spacing: Theme.Spacing.sm) {
+            Text("\(index + 1)")
+                .font(Theme.Font.callout)
+                .fontWeight(.semibold)
+                .foregroundStyle(Theme.Color.bone)
+                .frame(width: 24, height: 24)
+                .background(Theme.Color.sage, in: .circle)
+            Text(step.instruction)
+                .font(Theme.Font.body)
+                .foregroundStyle(Theme.Color.textPrimary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
         }
     }
 
