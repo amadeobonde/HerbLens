@@ -98,28 +98,29 @@ struct ScanIdleView: View {
     }
 
     /// Fills the viewfinder card while the camera is not yet authorized or isn't
-    /// available (simulator). Apothecary art as a blurred warm backdrop, a big
-    /// scanning Bamboo in the center, helpful copy, and a sage dashed reticle so
-    /// the composition still reads as a scanner rather than an empty gray box.
+    /// available (simulator). Apothecary scene as a warm backdrop + big scanning
+    /// mascot + helpful copy + 4 corner brackets in sage so the composition reads
+    /// as a real viewfinder rather than a bordered box.
     private var placeholderTint: some View {
         ZStack {
             Image("Scenes/Apothecary")
                 .resizable()
                 .scaledToFill()
-                .blur(radius: 18)
-                .opacity(0.55)
-                .overlay(
-                    LinearGradient(
-                        colors: [Theme.Color.background.opacity(0.2), Theme.Color.background.opacity(0.55)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .opacity(0.85)
+                .blur(radius: 6)
 
-            VStack(spacing: Theme.Spacing.md) {
-                MascotBadge(.scanning, size: 160)
+            // Subtle vignette darkens the edges so the mascot + copy pop.
+            RadialGradient(
+                colors: [Color.clear, Theme.Color.background.opacity(0.35)],
+                center: .center,
+                startRadius: 60,
+                endRadius: 240
+            )
 
-                VStack(spacing: Theme.Spacing.xxs) {
+            VStack(spacing: Theme.Spacing.sm) {
+                MascotBadge(.scanning, size: 150)
+
+                VStack(spacing: 2) {
                     Text("Point at any plant")
                         .font(Theme.Font.headline)
                         .foregroundStyle(Theme.Color.textPrimary)
@@ -127,15 +128,56 @@ struct ScanIdleView: View {
                         .font(Theme.Font.caption)
                         .foregroundStyle(Theme.Color.textSecondary)
                 }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xxs)
+                .background(
+                    Capsule().fill(Theme.Color.background.opacity(0.7))
+                )
             }
 
-            RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous)
-                .strokeBorder(
-                    Theme.Color.sage.opacity(0.9),
-                    style: StrokeStyle(lineWidth: 2, dash: [8, 6])
-                )
-                .padding(Theme.Spacing.md)
+            viewfinderCornerBrackets
         }
+    }
+
+    /// Four L-shaped corner brackets — a real viewfinder shape rather than a
+    /// full rectangle outline.
+    private var viewfinderCornerBrackets: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            let bracketLen: CGFloat = 28
+            let inset: CGFloat = 20
+            let line: CGFloat = 3
+            ZStack {
+                // Top-left
+                bracket(isFlipH: false, isFlipV: false, length: bracketLen, thickness: line)
+                    .position(x: inset + bracketLen / 2, y: inset + bracketLen / 2)
+                // Top-right
+                bracket(isFlipH: true, isFlipV: false, length: bracketLen, thickness: line)
+                    .position(x: size.width - inset - bracketLen / 2, y: inset + bracketLen / 2)
+                // Bottom-left
+                bracket(isFlipH: false, isFlipV: true, length: bracketLen, thickness: line)
+                    .position(x: inset + bracketLen / 2, y: size.height - inset - bracketLen / 2)
+                // Bottom-right
+                bracket(isFlipH: true, isFlipV: true, length: bracketLen, thickness: line)
+                    .position(x: size.width - inset - bracketLen / 2, y: size.height - inset - bracketLen / 2)
+            }
+        }
+    }
+
+    private func bracket(isFlipH: Bool, isFlipV: Bool, length: CGFloat, thickness: CGFloat) -> some View {
+        ZStack(alignment: isFlipH ? (isFlipV ? .bottomTrailing : .topTrailing) : (isFlipV ? .bottomLeading : .topLeading)) {
+            // Horizontal arm
+            Rectangle()
+                .fill(Theme.Color.sage)
+                .frame(width: length, height: thickness)
+                .frame(width: length, height: length, alignment: isFlipV ? .bottom : .top)
+            // Vertical arm
+            Rectangle()
+                .fill(Theme.Color.sage)
+                .frame(width: thickness, height: length)
+                .frame(width: length, height: length, alignment: isFlipH ? .trailing : .leading)
+        }
+        .frame(width: length, height: length)
     }
 
     private var permissionPrompt: some View {

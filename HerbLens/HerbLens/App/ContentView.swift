@@ -16,7 +16,7 @@ import SwiftUI
 /// keeps the nav shell a stable integration surface.
 struct ContentView: View {
     @Environment(\.dependencies) private var dependencies
-    @State private var selection: AppTab = .home
+    @State private var selection: AppTab = .scan
     @State private var showPaywallStub = false
     @State private var tier: SubscriptionTier = .free
     @State private var userDisplayName: String = "Guest"
@@ -25,6 +25,11 @@ struct ContentView: View {
     enum AppTab: Hashable { case home, scan, recipes, vault, profile }
 
     var body: some View {
+        // Tab order is deliberate: Scan sits in the center (3rd of 5) because
+        // identify-a-plant is the primary use case per the product brief. Thumb
+        // hit-zone on a phone naturally falls under the center tab. The app
+        // launches directly on Scan (see `selection` default) so first-time
+        // users can take a photo without a single tap.
         TabView(selection: $selection) {
             Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
                 HomeView(
@@ -35,15 +40,15 @@ struct ContentView: View {
                 )
             }
 
+            Tab("Recipes", systemImage: Theme.Icon.recipes, value: AppTab.recipes) {
+                RecipesHomeView()
+            }
+
             Tab("Scan", systemImage: Theme.Icon.scan, value: AppTab.scan) {
                 ScanView(
                     onOpenVault: { @Sendable in Task { @MainActor in selection = .vault } },
                     onPaywall: { @Sendable in Task { @MainActor in showPaywallStub = true } }
                 )
-            }
-
-            Tab("Recipes", systemImage: Theme.Icon.recipes, value: AppTab.recipes) {
-                RecipesHomeView()
             }
 
             Tab("Vault", systemImage: Theme.Icon.vault, value: AppTab.vault) {
