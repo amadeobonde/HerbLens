@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		11BF90512F90A23D006C88CE /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 11CC00012F907400007C6CAC /* Supabase */; };
+		11BF90522F90A23D006C88CE /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 11CC00022F907400007C6CAC /* Kingfisher */; };
+		11BF90532F90A23D006C88CE /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 11CC00032F907400007C6CAC /* RevenueCat */; };
+		11BF90542F90A23D006C88CE /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 11CC00042F907400007C6CAC /* PostHog */; };
+		11BF90552F90A23D006C88CE /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 11CC00052F907400007C6CAC /* Sentry */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		11EE68222F907142007C6CAC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,11 +32,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		11AA00012F907200007C6CAC /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Config/Debug.xcconfig; sourceTree = "<group>"; };
+		11AA00022F907200007C6CAC /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Config/Release.xcconfig; sourceTree = "<group>"; };
 		11EE68142F907141007C6CAC /* HerbLens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HerbLens.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		11EE68212F907142007C6CAC /* HerbLensTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerbLensTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		11EE682B2F907142007C6CAC /* HerbLensUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HerbLensUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		11AA00012F907200007C6CAC /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Config/Debug.xcconfig; sourceTree = "<group>"; };
-		11AA00022F907200007C6CAC /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Config/Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -54,6 +62,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11BF90552F90A23D006C88CE /* Sentry in Frameworks */,
+				11BF90542F90A23D006C88CE /* PostHog in Frameworks */,
+				11BF90532F90A23D006C88CE /* RevenueCat in Frameworks */,
+				11BF90522F90A23D006C88CE /* Kingfisher in Frameworks */,
+				11BF90512F90A23D006C88CE /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +87,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		11BF90562F90A23D006C88CE /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				11AA00012F907200007C6CAC /* Debug.xcconfig */,
+				11AA00022F907200007C6CAC /* Release.xcconfig */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		11EE680B2F907141007C6CAC = {
 			isa = PBXGroup;
 			children = (
@@ -81,6 +103,7 @@
 				11EE68242F907142007C6CAC /* HerbLensTests */,
 				11EE682E2F907142007C6CAC /* HerbLensUITests */,
 				11EE68152F907141007C6CAC /* Products */,
+				11BF90562F90A23D006C88CE /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -202,8 +225,6 @@
 			);
 			mainGroup = 11EE680B2F907141007C6CAC;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
-			productRefGroup = 11EE68152F907141007C6CAC /* Products */;
 			packageReferences = (
 				11BB00012F907300007C6CAC /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				11BB00022F907300007C6CAC /* XCRemoteSwiftPackageReference "Kingfisher" */,
@@ -211,6 +232,8 @@
 				11BB00042F907300007C6CAC /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				11BB00052F907300007C6CAC /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 11EE68152F907141007C6CAC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -414,19 +437,19 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 49YQ78W65S;
 				ENABLE_PREVIEWS = YES;
-				EXCLUDED_SOURCE_FILE_NAMES = ".gitkeep";
+				EXCLUDED_SOURCE_FILE_NAMES = .gitkeep;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
+				INFOPLIST_KEY_POSTHOG_HOST = "$(POSTHOG_HOST)";
+				INFOPLIST_KEY_REVENUECAT_API_KEY = "$(REVENUECAT_API_KEY)";
+				INFOPLIST_KEY_SENTRY_DSN = "$(SENTRY_DSN)";
+				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
-				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
-				INFOPLIST_KEY_REVENUECAT_API_KEY = "$(REVENUECAT_API_KEY)";
-				INFOPLIST_KEY_POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
-				INFOPLIST_KEY_POSTHOG_HOST = "$(POSTHOG_HOST)";
-				INFOPLIST_KEY_SENTRY_DSN = "$(SENTRY_DSN)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -454,19 +477,19 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 49YQ78W65S;
 				ENABLE_PREVIEWS = YES;
-				EXCLUDED_SOURCE_FILE_NAMES = ".gitkeep";
+				EXCLUDED_SOURCE_FILE_NAMES = .gitkeep;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
+				INFOPLIST_KEY_POSTHOG_HOST = "$(POSTHOG_HOST)";
+				INFOPLIST_KEY_REVENUECAT_API_KEY = "$(REVENUECAT_API_KEY)";
+				INFOPLIST_KEY_SENTRY_DSN = "$(SENTRY_DSN)";
+				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
+				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
-				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
-				INFOPLIST_KEY_REVENUECAT_API_KEY = "$(REVENUECAT_API_KEY)";
-				INFOPLIST_KEY_POSTHOG_API_KEY = "$(POSTHOG_API_KEY)";
-				INFOPLIST_KEY_POSTHOG_HOST = "$(POSTHOG_HOST)";
-				INFOPLIST_KEY_SENTRY_DSN = "$(SENTRY_DSN)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
