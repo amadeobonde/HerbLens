@@ -17,10 +17,7 @@ struct RecentlyScannedRow: View {
     var body: some View {
         if !resolved.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Recently scanned")
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.textPrimary)
-                    .padding(.horizontal, Theme.Spacing.md)
+                SectionHeader("Recently scanned")
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Theme.Spacing.md) {
@@ -28,7 +25,10 @@ struct RecentlyScannedRow: View {
                             Button {
                                 onSelect(entry.plant)
                             } label: {
-                                RecentScanTile(scan: entry.scan, plant: entry.plant)
+                                GlassCard(tone: .subtle) {
+                                    RecentScanTile(scan: entry.scan, plant: entry.plant)
+                                }
+                                .frame(width: 120 + Theme.Spacing.md * 2)
                             }
                             .buttonStyle(.plain)
                         }

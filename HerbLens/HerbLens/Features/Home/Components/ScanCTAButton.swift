@@ -19,7 +19,7 @@ struct ScanCTAButton: View {
 
     private var buttonContent: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [Theme.Color.sage, Theme.Color.forest],
@@ -28,14 +28,14 @@ struct ScanCTAButton: View {
                     )
                 )
                 .frame(height: 132)
-                .shadow(color: Theme.Color.forest.opacity(0.25), radius: 18, x: 0, y: 8)
+                .shadow(Theme.Shadow.float)
 
             HStack(spacing: Theme.Spacing.md) {
                 ZStack {
                     Circle()
                         .fill(Theme.Color.bone.opacity(0.18))
                         .frame(width: 56, height: 56)
-                    Image(systemName: "camera.viewfinder")
+                    Image(systemName: Theme.Icon.scan)
                         .font(.system(size: 26, weight: .semibold))
                         .foregroundStyle(Theme.Color.bone)
                 }
@@ -63,7 +63,7 @@ struct ScanCTAButton: View {
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
     }
 
     /// Returns the canonical Bamboo asset if Instance 1 has published the imageset,

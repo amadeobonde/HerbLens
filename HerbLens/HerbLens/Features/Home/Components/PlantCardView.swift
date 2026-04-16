@@ -33,20 +33,40 @@ struct PlantCardView: View {
                     .padding(Theme.Spacing.xs)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(plant.commonName)
                     .font(Theme.Font.callout)
                     .foregroundStyle(Theme.Color.textPrimary)
                     .lineLimit(1)
-                Text(plant.category)
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(Theme.Color.textSecondary)
-                    .lineLimit(1)
+                if let tag = plant.tags.first {
+                    TagChip(text: tag)
+                } else {
+                    Text(plant.category)
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(Theme.Color.textSecondary)
+                        .lineLimit(1)
+                }
             }
         }
         .frame(width: width, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(plant.commonName), \(plant.category), health score \(plant.healthScore.overallScore)")
+    }
+}
+
+/// Capsule tag chip rendered under the plant name. Uses the subtle glass surface
+/// so it reads as a soft companion label rather than competing with the score badge.
+private struct TagChip: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(Theme.Font.caption)
+            .foregroundStyle(Theme.Color.forest)
+            .padding(.horizontal, Theme.Spacing.xs)
+            .padding(.vertical, 3)
+            .background(Theme.Color.sage.opacity(0.18), in: Capsule())
+            .lineLimit(1)
     }
 }
 
