@@ -412,3 +412,51 @@ filters output to compiler errors, warnings, and Swift Testing pass/fail
 lines — pipe through `--verbose` if you need raw xcodebuild output. If the
 simulator gets stuck "Busy" between runs, `xcrun simctl shutdown all`
 unsticks it.
+
+### 10.13 `test-services-low-mem.sh` hardcodes the primary worktree (Instance 7)
+
+`PROJECT_DIR` and `LOG_DIR` are absolute paths to
+`/Users/amadeobonde/Desktop/HerbLens/...`, so running the script from a
+sibling worktree (e.g. `HerbLens-recipes`) silently builds the primary
+worktree's source — your changes never get compiled or tested. For per-
+worktree runs, invoke `xcodebuild` directly with the same flag set and add
+`-derivedDataPath <unique>` so concurrent builds across worktrees don't
+corrupt each other's incremental state:
+
+```bash
+cd <worktree>/HerbLens
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
+xcodebuild test -project HerbLens.xcodeproj -scheme HerbLens \
+  -destination "id=<sim-uuid>" \
+  -derivedDataPath ~/Library/Developer/Xcode/DerivedData/HerbLens-<feature> \
+  -jobs 2 -parallel-testing-enabled NO \
+  -disableAutomaticPackageResolution -skipPackagePluginValidation \
+  -skipMacroValidation COMPILER_INDEX_STORE_ENABLE=NO \
+  SWIFT_COMPILATION_MODE=singlefile ONLY_ACTIVE_ARCH=YES
+```
+
+Each per-worktree DerivedData costs ~10 GB once SPM checkouts compile —
+delete it (`rm -rf ~/Library/Developer/Xcode/DerivedData/HerbLens-<feature>`)
+between long sessions if your disk is tight.
+
+### 10.14 New worktrees need `Config/Debug.xcconfig` copied in (Instance 7)
+
+`HerbLens/Config/Debug.xcconfig` and `Release.xcconfig` are gitignored (they
+hold real secrets). `git worktree add` only checks out tracked files, so a
+fresh worktree fails the build with:
+
+> error: Unable to open base configuration reference file '.../Config/Debug.xcconfig'
+
+Fix: `cp <primary>/HerbLens/Config/{Debug,Release}.xcconfig <new-worktree>/HerbLens/Config/`
+right after `git worktree add`. Don't commit them.
+
+### 10.15 Recipes feature uses `featured()` + local tinctures (Instance 7)
+
+`PlantsRepository` has no "list all" method — `search("")` returns `[]` from
+the live impl (mock returns all). `RecipesHomeView` calls
+`featured()` and falls back to `RecipePreviewFixtures.allRecipes` when the
+server has no data. Tinctures aren't in the schema yet, so
+`RecipePreviewFixtures.localTinctures` ships them locally; they're merged in
+when the live `featured()` plants don't already include any. When Instance 1
+or 2 adds a real tinctures source (DB table or `PlantsRepository.allWithRecipes()`),
+swap the fallback in `RecipesHomeView.loadRecipes()`.
