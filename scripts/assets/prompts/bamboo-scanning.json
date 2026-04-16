@@ -1,0 +1,9 @@
+{
+  "media": "image",
+  "variant": "pro-image",
+  "transparent": true,
+  "include_mascot": true,
+  "aspect_ratio": "1:1",
+  "use_bamboo_reference": true,
+  "prompt": "Bamboo, the HerbLens panda mascot, crouched low and peering through a small brass-rimmed magnifying glass held up close to his right eye in his right paw. In his left paw he gently cups a small sprig of green herb (rosemary or sage) that he is examining. Expression: cheerful, curious concentration — eyes wide and focused, gentle closed-mouth smile. Pose is three-quarter angle so the viewer sees both his face and the leaf. The magnifying glass is small — about 1/3 head width — with a soft amber #C9872A metal rim and a subtle warm reflection on the glass (not a giant cartoon lens). The herb sprig is sage #7B9467 with tiny amber highlights on the upper leaves.\n\nRENDERING STYLE: Match the canonical bamboo-default reference EXACTLY — same proportions, same eye size with symmetric white highlights, same blush circles, same fur palette (#F7EFE2 body, #2A2A2A markings), same clean soft-shaded vector-style illustration with smooth gradient shading. Flat base colors, airbrushed soft shading, NO painterly brushstrokes, NO paper grain, NO sketchy edges. Subtle ambient-occlusion contour under arms and belly. Warm single-source light from upper left. Character occupies ~75 percent of frame height with 12 percent margins on every side. Use this for the Scan screen loading / empty state."
+}
