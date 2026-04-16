@@ -5,11 +5,18 @@ public nonisolated struct HerbProfilePayload: Sendable, Hashable {
     public let plant: Plant
     public let healthScore: HealthScore
     public let tier: SubscriptionTier
+    public let relatedPlants: [Plant]
 
-    public init(plant: Plant, healthScore: HealthScore, tier: SubscriptionTier) {
+    public init(
+        plant: Plant,
+        healthScore: HealthScore,
+        tier: SubscriptionTier,
+        relatedPlants: [Plant] = []
+    ) {
         self.plant = plant
         self.healthScore = healthScore
         self.tier = tier
+        self.relatedPlants = relatedPlants
     }
 }
 

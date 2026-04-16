@@ -13,7 +13,6 @@ final class HerbProfileViewModel {
     private let auth: any AuthService
 
     private(set) var state: HerbProfileLoadState = .idle
-    var selectedTab: HerbTab = .uses
     var isBreakdownExpanded: Bool = false
 
     init(
@@ -42,12 +41,22 @@ final class HerbProfileViewModel {
             async let plantFetch = plants.plant(id: plantID)
             async let scoreFetch = plants.healthScore(for: plantID, userID: userID)
             async let tierFetch = subscriptions.currentTier()
+            async let featuredFetch: [Plant] = (try? plants.featured()) ?? []
 
             let plant = try await plantFetch
             let score = try await scoreFetch
             let tier = await tierFetch
+            let related = await featuredFetch
+                .filter { $0.id != plant.id && $0.category == plant.category }
 
-            state = .loaded(HerbProfilePayload(plant: plant, healthScore: score, tier: tier))
+            state = .loaded(
+                HerbProfilePayload(
+                    plant: plant,
+                    healthScore: score,
+                    tier: tier,
+                    relatedPlants: related
+                )
+            )
         } catch {
             state = .failed(error)
         }
