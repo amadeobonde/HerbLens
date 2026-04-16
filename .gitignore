@@ -29,6 +29,13 @@ build/
 .env
 .env.*
 
+# Google Cloud service account keys — never commit
+herblens-*.json
+*-service-account*.json
+
+# Local planning / instance briefs
+.claude/instance-briefs/
+
 # macOS
 .DS_Store
 ._*
