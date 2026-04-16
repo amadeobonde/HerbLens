@@ -4,8 +4,8 @@ import SwiftUI
 /// `BrewHero.mp4` looped inside a `GlassCard(.modal)` and offers the primary
 /// "Get started" advance plus a ghost top-right skip.
 struct WelcomeView: View {
-    let onContinue: () -> Void
-    var onSkip: (() -> Void)? = nil
+    let onContinue: @Sendable () -> Void
+    var onSkip: (@Sendable () -> Void)? = nil
 
     var body: some View {
         ZStack(alignment: .topTrailing) {

@@ -123,9 +123,3 @@ struct ChatListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
-.infinity)
-    }
-}
-)
-    }
-}

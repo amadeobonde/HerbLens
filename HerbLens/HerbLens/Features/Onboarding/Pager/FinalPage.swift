@@ -5,7 +5,7 @@ import SwiftUI
 /// uses to swap in the main tab navigation.
 struct FinalPage: View {
     @Bindable var viewModel: OnboardingViewModel
-    let onTakeScan: () -> Void
+    let onTakeScan: @Sendable () -> Void
 
     var body: some View {
         ZStack {

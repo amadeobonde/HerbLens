@@ -315,7 +315,7 @@ private struct ContraindicationsCard: View {
                     .foregroundStyle(Theme.Color.ember)
 
                 ForEach(items, id: \.condition) { item in
-                    ContraindicationRow(item: item)
+                    HerbProfileContraindicationRow(item: item)
                 }
             }
         }
@@ -326,7 +326,7 @@ private struct ContraindicationsCard: View {
     }
 }
 
-private struct ContraindicationRow: View {
+private struct HerbProfileContraindicationRow: View {
     let item: Contraindication
 
     private var style: WarningStyle { WarningStyle(severity: item.severity) }
@@ -552,7 +552,7 @@ private struct HerbProfileLoadingPlaceholder: View {
 
 private struct HerbProfileErrorState: View {
     let error: Error
-    let onRetry: () -> Void
+    let onRetry: @Sendable () -> Void
 
     var body: some View {
         EmptyStateView(

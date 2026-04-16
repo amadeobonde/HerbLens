@@ -124,7 +124,7 @@ struct WrappingHStack<Item: Hashable, Content: View>: View {
     }
 }
 
-private struct FlowLayout: Layout {
+private struct OnboardingFlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

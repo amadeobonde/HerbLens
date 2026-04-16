@@ -14,10 +14,6 @@ struct RecipeDetailView: View {
     @State private var showingFinish: Bool = false
     @State private var finishedState: RecipePlayerState?
 
-    @State private var showingPlayer: Bool = false
-    @State private var showingFinish: Bool = false
-    @State private var finishedState: RecipePlayerState?
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {

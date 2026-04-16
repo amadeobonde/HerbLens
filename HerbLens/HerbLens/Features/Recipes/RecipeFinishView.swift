@@ -162,13 +162,25 @@ struct RecipeFinishView: View {
     }
 
     private func saveEntry() {
-        let data = capturedImage?.jpegData(compressionQuality: 0.8)
+        // Stage photo to a temp URL; the Vault repository (Instance B3) is the canonical
+        // owner of BrewEntry persistence and will copy this into Documents/brews/ on add.
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let entryID = UUID().uuidString
+        let photoURL: URL = {
+            let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("\(entryID).jpg")
+            if let data = capturedImage?.jpegData(compressionQuality: 0.8) {
+                try? data.write(to: tmp)
+            }
+            return tmp
+        }()
         let entry = BrewEntry(
+            id: entryID,
             recipeID: recipe.id,
             recipeTitle: recipe.title,
-            photoData: data,
-            note: trimmed.isEmpty ? nil : trimmed
+            photoLocalURL: photoURL,
+            notes: trimmed.isEmpty ? nil : trimmed,
+            brewedAt: Date(),
+            isFavorited: false
         )
         madeStore.appendBrew(entry)
         RecipeHaptics.finish()

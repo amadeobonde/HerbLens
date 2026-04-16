@@ -5,7 +5,7 @@ import SwiftUI
 /// for ("Better sleep" rather than the older "Sleep" preset).
 struct GoalsPickerPage: View {
     @Bindable var viewModel: OnboardingViewModel
-    let onContinue: () -> Void
+    let onContinue: @Sendable () -> Void
 
     /// Spec-mandated chips. Mapped onto draft goals 1:1 by display name —
     /// `OnboardingViewModel.addGoal(named:)` already deduplicates on
@@ -132,7 +132,7 @@ private struct GoalChip: View {
 /// Local copy of the wrapping flex layout (the existing `WrappingHStack`
 /// variant lives in `TagInputField.swift` and is bound to a `Hashable` Item;
 /// using a fresh layout here avoids cross-feature coupling).
-private struct FlowLayout: Layout {
+private struct GoalsFlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
