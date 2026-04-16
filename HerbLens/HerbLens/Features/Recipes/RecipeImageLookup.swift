@@ -1,48 +1,42 @@
 import SwiftUI
 
-/// Maps a `Recipe` to the bundled asset name in `Assets.xcassets/Recipes/`.
-/// Uses case-insensitive substring matching on the recipe title so the
-/// lookup survives different title wording (e.g. "Bedtime Lavender Tea").
-/// Returns `nil` when no bundled asset exists — callers should fall back
-/// to a theme-colored placeholder rectangle.
+/// Maps a `Recipe` to a bundled asset under `Assets.xcassets/Recipes/`.
+/// Returns the asset name *without* the `Recipes/` prefix — callers prepend
+/// `Recipes/` when they need a fully-qualified path. Falls back to `nil`
+/// when no bundled asset exists; callers render a theme-coloured placeholder.
+///
+/// Asset names match the design-system `Recipes/` imagesets (CamelCase, e.g.
+/// `Recipes/TeaCardChamomile`). When new bundled tea cards land, append a
+/// `(match, slug)` row here and ship the matching imageset alongside.
 nonisolated enum RecipeImageLookup {
     private static let teaSlugs: [(match: String, slug: String)] = [
-        ("chamomile", "chamomile"),
-        ("peppermint", "peppermint"),
-        ("ginger", "ginger"),
-        ("lavender", "lavender"),
-        ("lemon balm", "lemon-balm"),
-        ("echinacea", "echinacea"),
-        ("rooibos", "rooibos"),
-        ("dandelion", "dandelion"),
+        ("chamomile", "TeaCardChamomile"),
+        ("peppermint", "TeaCardPeppermint"),
+        // Future tea cards (ginger, lavender, lemon balm, echinacea, rooibos,
+        // dandelion) — wire as soon as the matching `Recipes/TeaCardX.imageset`
+        // ships in `Assets.xcassets`.
     ]
 
     private static let tinctureSlugs: [(match: String, slug: String)] = [
-        ("echinacea", "echinacea"),
-        ("valerian", "valerian"),
-        ("elderberry", "elderberry"),
-        ("milk thistle", "milk-thistle"),
+        // No bundled tincture asset shipped yet — placeholder rendering kicks in.
     ]
 
+    /// Returns the bare asset slug (e.g. `TeaCardChamomile`) or `nil`. Callers
+    /// that want a fully-qualified `Recipes/Slug` path build it themselves.
     static func assetName(for recipe: Recipe) -> String? {
         let lower = recipe.title.lowercased()
         let candidates: [(String, String)]
-        let prefix: String
         switch recipe.type {
-        case .tea:
-            candidates = teaSlugs
-            prefix = "tea-card"
-        case .tincture:
-            candidates = tinctureSlugs
-            prefix = "tincture"
+        case .tea:       candidates = teaSlugs
+        case .tincture:  candidates = tinctureSlugs
         }
         for (match, slug) in candidates where lower.contains(match) {
-            return "\(prefix)-\(slug)"
+            return slug
         }
         return nil
     }
 
     static func image(for recipe: Recipe) -> Image? {
-        assetName(for: recipe).map { Image($0) }
+        assetName(for: recipe).map { Image("Recipes/\($0)") }
     }
 }
