@@ -131,6 +131,7 @@ struct RecipePlayerView: View {
     private var stepCard: some View {
         GlassCard(tone: .modal) {
             VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                stepHero
                 stepBadge
                 if let step = state.currentStep {
                     Text(step.instruction)
@@ -144,6 +145,26 @@ struct RecipePlayerView: View {
             }
         }
         .shadow(Theme.Shadow.modal)
+    }
+
+    /// Visual anchor at the top of each step card. Shows the recipe's hero art when
+    /// a local asset is bundled, otherwise falls back to the brewing mascot so every
+    /// step has a warm focal point rather than bare text.
+    @ViewBuilder
+    private var stepHero: some View {
+        if let heroImage = RecipeImageLookup.image(for: recipe) {
+            heroImage
+                .resizable()
+                .scaledToFill()
+                .frame(height: 140)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+        } else {
+            RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
+                .fill(Theme.Color.sage.opacity(0.15))
+                .frame(height: 140)
+                .overlay(MascotBadge(.brewing, size: 96))
+        }
     }
 
     private var stepBadge: some View {
@@ -195,6 +216,18 @@ struct RecipePlayerView: View {
                         Task { @MainActor in state.resetTimer() }
                     }
                     .frame(maxWidth: 120)
+                }
+
+                // Always-available skip. Lets the user move on without finishing the
+                // timer — useful when they've already hit the time elsewhere or just
+                // want to jump ahead. Matches the "Duolingo-style but not punitive"
+                // brief: gentle gating, not hard-locked.
+                PrimaryButton(
+                    state.isAtLastStep ? "Finish brew" : "Next step →",
+                    variant: .ghost
+                ) {
+                    RecipeHaptics.tick()
+                    Task { @MainActor in _ = state.advance() }
                 }
             }
             .padding(Theme.Spacing.md)

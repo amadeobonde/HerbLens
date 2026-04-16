@@ -66,12 +66,12 @@ struct ScanCTAButton: View {
         .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.lg, style: .continuous))
     }
 
-    /// Returns the canonical Bamboo asset if Instance 1 has published the imageset,
-    /// otherwise a soft sage SF Symbol so the CTA still ships during parallel work.
+    /// Returns the canonical Bamboo mascot from the design-system asset namespace.
+    /// Falls back to the legacy `BambooCanonical` name and then to an SF Symbol so
+    /// the CTA still ships across every feature worktree regardless of merge order.
     private var mascotImage: Image {
-        if UIImage(named: "BambooCanonical") != nil {
-            return Image("BambooCanonical")
-        }
+        if UIImage(named: "Bamboo/Default") != nil { return Image("Bamboo/Default") }
+        if UIImage(named: "BambooCanonical") != nil { return Image("BambooCanonical") }
         return Image(systemName: "leaf.circle.fill")
     }
 }

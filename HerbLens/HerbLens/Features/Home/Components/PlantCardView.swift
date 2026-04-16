@@ -9,25 +9,8 @@ struct PlantCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             ZStack(alignment: .topTrailing) {
-                AsyncImage(url: URL(string: plant.thumbnailUrl)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure, .empty:
-                        ZStack {
-                            Theme.Color.sage.opacity(0.18)
-                            Image(systemName: "leaf.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(Theme.Color.sage)
-                        }
-                    @unknown default:
-                        Theme.Color.sage.opacity(0.18)
-                    }
-                }
-                .frame(width: width, height: width)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                PlantThumbnail(plant: plant, cornerRadius: 14)
+                    .frame(width: width, height: width)
 
                 ScoreBadge(score: plant.healthScore.overallScore)
                     .padding(Theme.Spacing.xs)

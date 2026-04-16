@@ -16,7 +16,7 @@ import SwiftUI
 /// keeps the nav shell a stable integration surface.
 struct ContentView: View {
     @Environment(\.dependencies) private var dependencies
-    @State private var selection: AppTab = .scan
+    @State private var selection: AppTab = .home
     @State private var showPaywallStub = false
     @State private var tier: SubscriptionTier = .free
     @State private var userDisplayName: String = "Guest"
@@ -27,7 +27,12 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
-                HomeView()
+                HomeView(
+                    onScanTap: { selection = .scan },
+                    onRecipesTap: { selection = .recipes },
+                    onVaultTap: { selection = .vault },
+                    onChatTap: { showPaywallStub = true }   // Chat sheet TBD; paywall stub for now
+                )
             }
 
             Tab("Scan", systemImage: Theme.Icon.scan, value: AppTab.scan) {

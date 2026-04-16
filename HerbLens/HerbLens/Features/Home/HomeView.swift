@@ -12,7 +12,24 @@ public struct HomeView: View {
     /// header Bamboo spins one full turn via `Theme.Motion.snappy`.
     @State private var mascotRotation: Double = 0
 
-    public init() {}
+    /// Navigation closures so ContentView can drive tab switches when a Home button
+    /// is tapped. Every closure is optional for preview/test ergonomics.
+    public let onScanTap: (@Sendable @MainActor () -> Void)?
+    public let onRecipesTap: (@Sendable @MainActor () -> Void)?
+    public let onVaultTap: (@Sendable @MainActor () -> Void)?
+    public let onChatTap: (@Sendable @MainActor () -> Void)?
+
+    public init(
+        onScanTap: (@Sendable @MainActor () -> Void)? = nil,
+        onRecipesTap: (@Sendable @MainActor () -> Void)? = nil,
+        onVaultTap: (@Sendable @MainActor () -> Void)? = nil,
+        onChatTap: (@Sendable @MainActor () -> Void)? = nil
+    ) {
+        self.onScanTap = onScanTap
+        self.onRecipesTap = onRecipesTap
+        self.onVaultTap = onVaultTap
+        self.onChatTap = onChatTap
+    }
 
     public var body: some View {
         NavigationStack(path: $path) {
@@ -97,16 +114,15 @@ public struct HomeView: View {
                     .padding(.top, Theme.Spacing.xs)
 
                 ScanCTAButton {
-                    // Scan flow lives in Instance 5. Wiring requires a destination
-                    // type owned by Scan — intentionally out of scope here.
+                    onScanTap?()
                 }
                 .padding(.horizontal, Theme.Spacing.md)
 
                 HomeQuickActionsRow(
-                    onScan: {},
-                    onRecipes: {},
-                    onVault: {},
-                    onChat: {}
+                    onScan: { onScanTap?() },
+                    onRecipes: { onRecipesTap?() },
+                    onVault: { onVaultTap?() },
+                    onChat: { onChatTap?() }
                 )
 
                 if !data.featured.isEmpty {

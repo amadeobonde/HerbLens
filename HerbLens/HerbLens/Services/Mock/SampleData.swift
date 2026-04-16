@@ -50,7 +50,235 @@ nonisolated enum SampleData {
 
     // MARK: - Plants
 
-    static var plants: [Plant] { [chamomile, peppermint, ginger, lavender, echinacea] }
+    static var plants: [Plant] {
+        [chamomile, peppermint, ginger, lavender, echinacea,
+         lemonBalm, rosemary, hibiscus, elderberry, dandelion]
+    }
+
+    // MARK: - Extended plant catalog (Instance 2 extended for recipe variety)
+
+    static var lemonBalm: Plant {
+        Plant(
+            id: "f6a0b1c2-d3e4-5678-f901-678901234567",
+            commonName: "Lemon Balm",
+            alternateNames: ["Melissa officinalis", "Sweet Balm"],
+            origin: "South-central Europe and Mediterranean",
+            regionsFound: ["Europe", "North America", "Asia"],
+            climates: [.temperate, .mediterranean],
+            growingConditions: "Partial shade, rich moist soil, can spread like mint.",
+            imageUrl: "",
+            thumbnailUrl: "",
+            description: "A gentle citrus-scented mint-family herb traditionally used for anxiety, sleep support, and digestive comfort.",
+            tags: ["calming", "sleep", "digestive", "anxiolytic"],
+            category: "Herb",
+            featured: true,
+            accessTier: .free,
+            healthScore: HealthScore(
+                overallScore: 86,
+                goalBreakdown: [
+                    GoalBreakdown(goalName: "Better Sleep", relevanceScore: 80, reason: "Rosmarinic acid + terpenes show modest sedative activity in trials."),
+                    GoalBreakdown(goalName: "Stress Relief", relevanceScore: 84, reason: "Reduces self-reported anxiety in placebo-controlled studies."),
+                ],
+                warnings: []
+            ),
+            uses: [
+                PlantUse(category: "Nervous System", description: "Supports calm and sleep onset. Often paired with valerian.", accessTier: .free),
+                PlantUse(category: "Digestive", description: "Eases nervous-stomach and mild cramping.", accessTier: .free),
+            ],
+            contraindications: [
+                Contraindication(condition: "Hypothyroid medication", details: "May interfere with thyroid hormone; separate by 4+ hours.", severity: .moderate),
+            ],
+            recipes: [
+                Recipe(id: "r6-lemonbalm-tea", title: "Evening Lemon Balm Tea", type: .tea, difficulty: .beginner, prepTime: "5 min", steepOrCureTime: "7 min", yield: "1 cup", accessTier: .premium,
+                       ingredients: [RecipeIngredient(name: "Fresh lemon balm leaves", amount: "2 tbsp", notes: "Bruise lightly"), RecipeIngredient(name: "Hot water", amount: "8 oz", notes: "175°F")],
+                       steps: [RecipeStep(stepNumber: 1, instruction: "Pour water over leaves, cover, steep 7 min.", tip: "Covering traps the volatile aromatics.")],
+                       imageUrl: nil),
+            ],
+            suggestedPrompts: ["Can lemon balm replace melatonin?", "Is lemon balm safe with SSRIs?"],
+            lastUpdated: Date(timeIntervalSince1970: 1_744_243_200)
+        )
+    }
+
+    static var rosemary: Plant {
+        Plant(
+            id: "a7b1c2d3-e4f5-6789-0123-789012345678",
+            commonName: "Rosemary",
+            alternateNames: ["Salvia rosmarinus", "Old Man"],
+            origin: "Mediterranean",
+            regionsFound: ["Europe", "North America", "Africa"],
+            climates: [.mediterranean, .temperate],
+            growingConditions: "Full sun, well-drained alkaline soil, drought tolerant.",
+            imageUrl: "",
+            thumbnailUrl: "",
+            description: "A woody aromatic evergreen shrub used for cognition, circulation, and culinary brightness. Recent trials show acute working-memory support.",
+            tags: ["cognition", "circulation", "energizing", "aromatic"],
+            category: "Herb",
+            featured: false,
+            accessTier: .free,
+            healthScore: HealthScore(
+                overallScore: 82,
+                goalBreakdown: [
+                    GoalBreakdown(goalName: "Better Sleep", relevanceScore: 25, reason: "Stimulating — avoid in the evening."),
+                    GoalBreakdown(goalName: "Stress Relief", relevanceScore: 55, reason: "1,8-cineole has acute cortisol-lowering effects at low doses."),
+                ],
+                warnings: [
+                    Warning(type: .medicationInteraction, severity: .moderate, message: "High doses may potentiate blood thinners."),
+                ]
+            ),
+            uses: [
+                PlantUse(category: "Cognition", description: "Inhalation of rosemary essential oil improves short-term memory in trials.", accessTier: .free),
+                PlantUse(category: "Circulation", description: "Traditionally rubbed on scalp for hair and circulation.", accessTier: .free),
+            ],
+            contraindications: [
+                Contraindication(condition: "Pregnancy (high dose)", details: "Avoid therapeutic doses during pregnancy.", severity: .high),
+                Contraindication(condition: "Epilepsy", details: "High-dose essential oil may lower seizure threshold.", severity: .high),
+            ],
+            recipes: [
+                Recipe(id: "r7-rosemary-tea", title: "Bright Morning Rosemary Tea", type: .tea, difficulty: .beginner, prepTime: "5 min", steepOrCureTime: "5 min", yield: "1 cup", accessTier: .premium,
+                       ingredients: [RecipeIngredient(name: "Fresh rosemary sprig", amount: "1 (4-inch)", notes: nil), RecipeIngredient(name: "Hot water", amount: "10 oz", notes: nil), RecipeIngredient(name: "Lemon", amount: "1 slice", notes: "Optional")],
+                       steps: [RecipeStep(stepNumber: 1, instruction: "Steep sprig in hot water 5 min.", tip: "Bruise with the back of a spoon first.")],
+                       imageUrl: nil),
+            ],
+            suggestedPrompts: ["Does rosemary actually help memory?", "Can I drink rosemary tea daily?"],
+            lastUpdated: Date(timeIntervalSince1970: 1_744_243_200)
+        )
+    }
+
+    static var hibiscus: Plant {
+        Plant(
+            id: "b8c2d3e4-f5a6-7890-1234-890123456789",
+            commonName: "Hibiscus",
+            alternateNames: ["Roselle", "Hibiscus sabdariffa"],
+            origin: "West Africa",
+            regionsFound: ["Africa", "Caribbean", "Central America", "Southeast Asia"],
+            climates: [.tropical, .subtropical],
+            growingConditions: "Warm climates, rich moist soil, full sun.",
+            imageUrl: "",
+            thumbnailUrl: "",
+            description: "A tart ruby-red flower traditionally used for blood pressure support and as a refreshing cold-brew tea.",
+            tags: ["cardiovascular", "cooling", "tart", "antioxidant"],
+            category: "Flower",
+            featured: true,
+            accessTier: .free,
+            healthScore: HealthScore(
+                overallScore: 80,
+                goalBreakdown: [
+                    GoalBreakdown(goalName: "Better Sleep", relevanceScore: 20, reason: "Not a primary sleep aid."),
+                    GoalBreakdown(goalName: "Stress Relief", relevanceScore: 60, reason: "Anthocyanins correlate with mild mood-support signals."),
+                ],
+                warnings: [
+                    Warning(type: .medicationInteraction, severity: .moderate, message: "May amplify blood-pressure medications. Consult a clinician if on hypertensives."),
+                ]
+            ),
+            uses: [
+                PlantUse(category: "Cardiovascular", description: "Multiple meta-analyses show modest systolic BP reduction.", accessTier: .free),
+                PlantUse(category: "Antioxidant", description: "High in anthocyanins and vitamin C.", accessTier: .free),
+            ],
+            contraindications: [
+                Contraindication(condition: "Low blood pressure", details: "Can further lower BP in susceptible people.", severity: .moderate),
+                Contraindication(condition: "Pregnancy", details: "High doses may stimulate uterine contractions.", severity: .moderate),
+            ],
+            recipes: [
+                Recipe(id: "r8-hibiscus-iced", title: "Ruby Hibiscus Cold Brew", type: .tea, difficulty: .beginner, prepTime: "2 min", steepOrCureTime: "4 hours", yield: "32 oz", accessTier: .premium,
+                       ingredients: [RecipeIngredient(name: "Dried hibiscus calyces", amount: "1/3 cup", notes: nil), RecipeIngredient(name: "Cold filtered water", amount: "32 oz", notes: nil), RecipeIngredient(name: "Honey", amount: "1–2 tbsp", notes: "To taste")],
+                       steps: [RecipeStep(stepNumber: 1, instruction: "Combine in a pitcher, refrigerate 4+ hours.", tip: "Longer = deeper color, not more bitter."), RecipeStep(stepNumber: 2, instruction: "Strain, sweeten, serve over ice.", tip: nil)],
+                       imageUrl: nil),
+            ],
+            suggestedPrompts: ["Is hibiscus safe with lisinopril?", "How much hibiscus tea per day?"],
+            lastUpdated: Date(timeIntervalSince1970: 1_744_243_200)
+        )
+    }
+
+    static var elderberry: Plant {
+        Plant(
+            id: "c9d3e4f5-a6b7-8901-2345-901234567890",
+            commonName: "Elderberry",
+            alternateNames: ["Sambucus nigra", "Black Elder"],
+            origin: "Europe and western Asia",
+            regionsFound: ["Europe", "North America"],
+            climates: [.temperate],
+            growingConditions: "Sun to partial shade, moist rich soil.",
+            imageUrl: "",
+            thumbnailUrl: "",
+            description: "A dark purple berry traditionally used at the onset of cold or flu symptoms. Always cook before consuming — raw fruit and bark are toxic.",
+            tags: ["immune", "cold-season", "antiviral", "syrup"],
+            category: "Berry",
+            featured: true,
+            accessTier: .free,
+            healthScore: HealthScore(
+                overallScore: 83,
+                goalBreakdown: [
+                    GoalBreakdown(goalName: "Better Sleep", relevanceScore: 20, reason: "Not a sleep aid."),
+                    GoalBreakdown(goalName: "Stress Relief", relevanceScore: 30, reason: "Not a stress remedy."),
+                ],
+                warnings: [
+                    Warning(type: .condition, severity: .high, message: "Raw berries, leaves, bark, and unripe fruit contain cyanogenic glycosides — ALWAYS cook before consuming."),
+                    Warning(type: .condition, severity: .moderate, message: "Autoimmune conditions — may over-activate immune response."),
+                ]
+            ),
+            uses: [
+                PlantUse(category: "Immune", description: "Shortens duration of colds/flu in randomized trials.", accessTier: .free),
+                PlantUse(category: "Antiviral", description: "In vitro antiviral activity against several respiratory viruses.", accessTier: .free),
+            ],
+            contraindications: [
+                Contraindication(condition: "Autoimmune disease", details: "Stimulates T-cell activity.", severity: .high),
+                Contraindication(condition: "Children under 1", details: "Not recommended in infants.", severity: .high),
+            ],
+            recipes: [
+                Recipe(id: "r9-elderberry-syrup", title: "Classic Elderberry Syrup", type: .tincture, difficulty: .intermediate, prepTime: "10 min", steepOrCureTime: "45 min simmer", yield: "2 cups", accessTier: .premium,
+                       ingredients: [RecipeIngredient(name: "Dried elderberries", amount: "2/3 cup", notes: nil), RecipeIngredient(name: "Water", amount: "3 cups", notes: nil), RecipeIngredient(name: "Raw honey", amount: "1 cup", notes: "Add after cooling"), RecipeIngredient(name: "Cinnamon stick", amount: "1", notes: "Optional")],
+                       steps: [RecipeStep(stepNumber: 1, instruction: "Simmer berries, water, and cinnamon 45 min, reduced by half.", tip: "Low heat — don't boil."), RecipeStep(stepNumber: 2, instruction: "Strain and cool to lukewarm.", tip: "Above 95°F damages honey enzymes."), RecipeStep(stepNumber: 3, instruction: "Stir in honey, bottle.", tip: "Refrigerate up to 2 months.")],
+                       imageUrl: nil),
+            ],
+            suggestedPrompts: ["Elderberry syrup dose for adults?", "Can kids take elderberry?"],
+            lastUpdated: Date(timeIntervalSince1970: 1_744_243_200)
+        )
+    }
+
+    static var dandelion: Plant {
+        Plant(
+            id: "d0e4f5a6-b7c8-9012-3456-012345678901",
+            commonName: "Dandelion",
+            alternateNames: ["Taraxacum officinale", "Lion's Tooth"],
+            origin: "Eurasia (naturalized globally)",
+            regionsFound: ["Europe", "North America", "Asia"],
+            climates: [.temperate],
+            growingConditions: "Anywhere — genuinely anywhere. Long taproot.",
+            imageUrl: "",
+            thumbnailUrl: "",
+            description: "A common \"weed\" whose roasted root makes a coffee substitute and whose leaves are a bitter green and mild diuretic.",
+            tags: ["digestive", "liver", "bitter", "diuretic"],
+            category: "Herb",
+            featured: false,
+            accessTier: .free,
+            healthScore: HealthScore(
+                overallScore: 77,
+                goalBreakdown: [
+                    GoalBreakdown(goalName: "Better Sleep", relevanceScore: 15, reason: "Not a sleep aid."),
+                    GoalBreakdown(goalName: "Stress Relief", relevanceScore: 40, reason: "Bitter herbs support digestion which eases stress-related GI complaints."),
+                ],
+                warnings: [
+                    Warning(type: .medicationInteraction, severity: .moderate, message: "Potassium-sparing diuretics + dandelion diuretic action may stack."),
+                ]
+            ),
+            uses: [
+                PlantUse(category: "Digestive", description: "Bitter leaves stimulate bile flow; traditional liver support.", accessTier: .free),
+                PlantUse(category: "Diuretic", description: "Roots have mild diuretic action with potassium retention.", accessTier: .free),
+            ],
+            contraindications: [
+                Contraindication(condition: "Bile duct obstruction", details: "Avoid if gallbladder is blocked.", severity: .high),
+                Contraindication(condition: "Asteraceae allergy", details: "Same plant family as ragweed.", severity: .moderate),
+            ],
+            recipes: [
+                Recipe(id: "r10-dandelion-coffee", title: "Roasted Dandelion Root \"Coffee\"", type: .tea, difficulty: .intermediate, prepTime: "10 min", steepOrCureTime: "12 min simmer", yield: "1 cup", accessTier: .premium,
+                       ingredients: [RecipeIngredient(name: "Roasted dandelion root", amount: "1 tbsp", notes: "Pre-roasted from the herb shop"), RecipeIngredient(name: "Water", amount: "10 oz", notes: nil), RecipeIngredient(name: "Oat milk", amount: "splash", notes: "Optional")],
+                       steps: [RecipeStep(stepNumber: 1, instruction: "Simmer root in water 12 min.", tip: "Don't boil — extracts bitter tannins."), RecipeStep(stepNumber: 2, instruction: "Strain into mug, add milk if desired.", tip: nil)],
+                       imageUrl: nil),
+            ],
+            suggestedPrompts: ["Is dandelion safe with lithium?", "Can I forage my own dandelions?"],
+            lastUpdated: Date(timeIntervalSince1970: 1_744_243_200)
+        )
+    }
 
     static var chamomile: Plant {
         Plant(
