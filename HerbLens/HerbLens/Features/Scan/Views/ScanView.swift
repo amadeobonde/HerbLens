@@ -7,10 +7,10 @@ public struct ScanView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var viewModel: ScanViewModel?
 
-    public let onOpenVault: (() -> Void)?
-    public let onPaywall: () -> Void
+    public let onOpenVault: (@Sendable () -> Void)?
+    public let onPaywall: @Sendable () -> Void
 
-    public init(onOpenVault: (() -> Void)? = nil, onPaywall: @escaping () -> Void) {
+    public init(onOpenVault: (@Sendable () -> Void)? = nil, onPaywall: @escaping @Sendable () -> Void) {
         self.onOpenVault = onOpenVault
         self.onPaywall = onPaywall
     }
@@ -33,8 +33,10 @@ public struct ScanView: View {
             ScanIdleView(tier: vm.tier, remaining: remaining) { image in
                 Task { await vm.submit(image: image) }
             }
-        case .capturing, .identifying:
+        case .capturing:
             ScanLoadingView()
+        case .identifying(let image):
+            ScanLoadingView(capturedImage: image)
         case .result(let result):
             ScanResultView(
                 result: result,
@@ -53,7 +55,7 @@ public struct ScanView: View {
                 onDismiss: { vm.reset() }
             )
         case .failed(let error):
-            ScanErrorOverlay(error: error, onDismiss: { vm.dismissError() })
+            ScanErrorView(error: error, onDismiss: { vm.dismissError() })
         case .permissionDenied:
             ScanIdleView(tier: vm.tier, remaining: nil) { image in
                 Task { await vm.submit(image: image) }
@@ -71,36 +73,5 @@ public struct ScanView: View {
         )
         viewModel = vm
         await vm.onAppear()
-    }
-}
-
-private struct ScanErrorOverlay: View {
-    let error: ScanDisplayError
-    let onDismiss: () -> Void
-
-    var body: some View {
-        ZStack {
-            Theme.Color.background.ignoresSafeArea()
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(Theme.Color.ember)
-                Text(error.title)
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.textPrimary)
-                Text(error.message)
-                    .font(Theme.Font.body)
-                    .foregroundStyle(Theme.Color.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Theme.Spacing.lg)
-                Button(error.retriable ? "Try again" : "OK", action: onDismiss)
-                    .font(Theme.Font.headline)
-                    .foregroundStyle(Theme.Color.bone)
-                    .padding(.horizontal, Theme.Spacing.xl)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(Capsule().fill(Theme.Color.forest))
-            }
-            .padding(Theme.Spacing.xl)
-        }
     }
 }
