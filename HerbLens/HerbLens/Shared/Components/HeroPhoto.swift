@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Rounded-bottom photo cap used at the top of hero/detail screens. Bottom corners are
 /// the only ones rounded (24pt), and a vertical gradient blends the photo into the
@@ -41,13 +44,45 @@ public struct HeroPhoto: View {
             Image(uiImage: uiImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-        } else if let named {
-            Image(named)
+        } else if let named, let resolved = Self.resolve(named) {
+            // SwiftUI silently renders nothing when a named asset doesn't resolve,
+            // so we first pick the right lookup — trying the namespaced path then
+            // the bare slug — and only fall through to the placeholder if neither
+            // works.
+            Image(uiImage: resolved)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
         } else {
-            Theme.Color.sage.opacity(0.25)
+            // Warm placeholder — sage wash + faint leaf motif so an unshipped
+            // hero asset never renders as a dead gray rectangle.
+            ZStack {
+                LinearGradient(
+                    colors: [Theme.Color.sage.opacity(0.35), Theme.Color.forest.opacity(0.25)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 42, weight: .light))
+                    .foregroundStyle(Theme.Color.bone.opacity(0.45))
+            }
         }
+    }
+
+    /// Resolves a named asset by trying the full namespaced path, then the bare
+    /// slug after the last `/`. Asset-catalog namespaces are inconsistent at
+    /// runtime depending on how `provides-namespace` is set — trying both paths
+    /// is the only reliable way.
+    private nonisolated static func resolve(_ name: String) -> UIImage? {
+        #if canImport(UIKit)
+        if let img = UIImage(named: name) { return img }
+        if let slash = name.lastIndex(of: "/") {
+            let bare = String(name[name.index(after: slash)...])
+            if let img = UIImage(named: bare) { return img }
+        }
+        return nil
+        #else
+        return nil
+        #endif
     }
 }
 

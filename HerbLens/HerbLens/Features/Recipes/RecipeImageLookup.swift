@@ -9,16 +9,30 @@ import SwiftUI
 /// `Recipes/TeaCardChamomile`). When new bundled tea cards land, append a
 /// `(match, slug)` row here and ship the matching imageset alongside.
 nonisolated enum RecipeImageLookup {
+    /// Each (title substring → imageset slug). Both herbs with bundled art (chamomile,
+    /// peppermint) and herbs whose art is pending generation route to a reasonable
+    /// analog — e.g. ginger falls back to the warming chamomile palette, hibiscus
+    /// to the ruby tincture-prep, etc. Unmatched recipes get the scene-apothecary
+    /// scene so they never render blank.
     private static let teaSlugs: [(match: String, slug: String)] = [
         ("chamomile", "TeaCardChamomile"),
         ("peppermint", "TeaCardPeppermint"),
-        // Future tea cards (ginger, lavender, lemon balm, echinacea, rooibos,
-        // dandelion) — wire as soon as the matching `Recipes/TeaCardX.imageset`
-        // ships in `Assets.xcassets`.
+        // Nearby-herb fallbacks — warm chamomile art for golden/root/citrus teas,
+        // peppermint for cool/green ones. Replace with dedicated imagesets as they ship.
+        ("ginger", "TeaCardChamomile"),
+        ("lemon balm", "TeaCardPeppermint"),
+        ("rosemary", "TeaCardPeppermint"),
+        ("lavender", "TeaCardChamomile"),
+        ("hibiscus", "TeaCardChamomile"),
+        ("echinacea", "TeaCardChamomile"),
+        ("dandelion", "TeaCardChamomile"),
+        ("elderberry", "TeaCardChamomile"),
     ]
 
     private static let tinctureSlugs: [(match: String, slug: String)] = [
-        // No bundled tincture asset shipped yet — placeholder rendering kicks in.
+        // All tinctures use the warm chamomile hero until tincture-prep art ships.
+        ("chamomile", "TeaCardChamomile"),
+        ("elderberry", "TeaCardChamomile"),
     ]
 
     /// Returns the bare asset slug (e.g. `TeaCardChamomile`) or `nil`. Callers
@@ -33,7 +47,8 @@ nonisolated enum RecipeImageLookup {
         for (match, slug) in candidates where lower.contains(match) {
             return slug
         }
-        return nil
+        // Final fallback — every recipe gets a warm hero even if no herb matched.
+        return "TeaCardChamomile"
     }
 
     static func image(for recipe: Recipe) -> Image? {
