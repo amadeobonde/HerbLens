@@ -16,6 +16,7 @@ final class ChatListViewModel {
     private(set) var phase: Phase = .idle
     private(set) var groups: [ConversationGroup] = []
     private(set) var plantNames: [String: String] = [:]
+    private(set) var plantThumbnailURLs: [String: URL] = [:]
 
     private let chat: any ChatRepository
     private let plants: any PlantsRepository
@@ -41,9 +42,10 @@ final class ChatListViewModel {
             let conversations = try await chat.conversations(userID: userID)
             let grouped = ConversationGrouping.group(conversations, now: now)
             let plantIDs = Set(conversations.compactMap { $0.contextPlantId })
-            let names = await resolvePlantNames(ids: plantIDs)
+            let resolved = await resolvePlants(ids: plantIDs)
             groups = grouped
-            plantNames = names
+            plantNames = resolved.names
+            plantThumbnailURLs = resolved.thumbnails
             phase = .loaded
         } catch {
             phase = .failed(Self.friendly(error))
@@ -55,14 +57,25 @@ final class ChatListViewModel {
         return plantNames[contextPlantId]
     }
 
-    private func resolvePlantNames(ids: Set<String>) async -> [String: String] {
-        var result: [String: String] = [:]
+    func plantThumbnailURL(for contextPlantId: String?) -> URL? {
+        guard let contextPlantId else { return nil }
+        return plantThumbnailURLs[contextPlantId]
+    }
+
+    private func resolvePlants(
+        ids: Set<String>
+    ) async -> (names: [String: String], thumbnails: [String: URL]) {
+        var names: [String: String] = [:]
+        var thumbnails: [String: URL] = [:]
         for id in ids {
             if let plant = try? await plants.plant(id: id) {
-                result[id] = plant.commonName
+                names[id] = plant.commonName
+                if let url = URL(string: plant.thumbnailUrl) {
+                    thumbnails[id] = url
+                }
             }
         }
-        return result
+        return (names, thumbnails)
     }
 
     nonisolated static func friendly(_ error: Error) -> String {

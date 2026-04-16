@@ -1,13 +1,13 @@
 import SwiftUI
 
 /// Conversation list. Sections group by `ChatDateBucket`; tapping a row pushes a thread
-/// view via the parent `NavigationStack`. The empty state uses Bamboo as the focal point
-/// and offers a CTA to start a fresh conversation.
+/// view via the parent `NavigationStack`. The empty state uses the shared `EmptyStateView`
+/// so Bamboo, headline, body copy, and CTA all match the rest of the app.
 struct ChatListView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var viewModel: ChatListViewModel?
     let onSelect: (Conversation) -> Void
-    let onStartBlank: () -> Void
+    let onStartBlank: @Sendable () -> Void
 
     var body: some View {
         Group {
@@ -41,40 +41,18 @@ struct ChatListView: View {
                 Spacer()
             }
         case .loaded where viewModel.groups.isEmpty:
-            emptyState
+            EmptyStateView(
+                mascot: .teacher,
+                title: "Ask Bamboo anything",
+                subtitle: "Tap a plant or start fresh.",
+                ctaTitle: "New conversation",
+                action: onStartBlank
+            )
         case .loaded:
             loadedList(viewModel: viewModel)
         case .failed(let message):
             failedState(message: message, viewModel: viewModel)
         }
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            Spacer()
-            BambooAvatarView(size: 120)
-            Text("Your chat with Bamboo is quiet")
-                .font(Theme.Font.headline)
-                .foregroundStyle(Theme.Color.charcoal)
-            Text("Ask anything — brewing, safety, the best herb for your goals.")
-                .font(Theme.Font.callout)
-                .foregroundStyle(Theme.Color.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Theme.Spacing.lg)
-            Button {
-                onStartBlank()
-            } label: {
-                Text("Start a conversation")
-                    .font(Theme.Font.callout.weight(.semibold))
-                    .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(Theme.Color.forest, in: Capsule())
-                    .foregroundStyle(Theme.Color.bone)
-            }
-            .buttonStyle(.plain)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func loadedList(viewModel: ChatListViewModel) -> some View {
@@ -87,11 +65,19 @@ struct ChatListView: View {
                         } label: {
                             ChatConversationRow(
                                 conversation: conversation,
-                                plantName: viewModel.plantName(for: conversation.contextPlantId)
+                                plantName: viewModel.plantName(for: conversation.contextPlantId),
+                                plantThumbnailURL: viewModel.plantThumbnailURL(for: conversation.contextPlantId)
                             )
                         }
                         .buttonStyle(.plain)
-                        .listRowBackground(Theme.Color.background)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(
+                            top: Theme.Spacing.xxs,
+                            leading: Theme.Spacing.md,
+                            bottom: Theme.Spacing.xxs,
+                            trailing: Theme.Spacing.md
+                        ))
                     }
                 } header: {
                     Text(group.bucket.title)
@@ -124,7 +110,7 @@ struct ChatListView: View {
                 .foregroundStyle(Theme.Color.ember)
             Text(message)
                 .font(Theme.Font.body)
-                .foregroundStyle(Theme.Color.charcoal)
+                .foregroundStyle(Theme.Color.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.Spacing.lg)
             Button("Try again") {
