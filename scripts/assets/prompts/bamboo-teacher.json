@@ -1,0 +1,9 @@
+{
+  "media": "image",
+  "variant": "pro-image",
+  "transparent": true,
+  "include_mascot": true,
+  "aspect_ratio": "1:1",
+  "use_bamboo_reference": true,
+  "prompt": "Bamboo, the HerbLens panda mascot, seated in a calm lotus-like pose — legs tucked under him, back softly rounded, a gentle forward lean. In both paws he holds open a small unfurled botanical scroll, the ends of the paper curling slightly. Drawn on the scroll in charcoal ink with touches of sage green: three tiny herb sketches — a sprig of mint, a single chamomile flower, a lavender stalk. Bamboo looks down at the scroll with a soft, wise, content expression — eyes nearly closed in focus, ears relaxed, gentle smile. Do NOT add glasses, hat, scarf, or any clothing/accessory. The scroll is bone #F7EFE2 with a warm amber #C9872A border strip along its top and bottom edges.\n\nRENDERING STYLE: Match the canonical bamboo-default reference EXACTLY — same proportions, same eye/blush/ear-leaf details, same fur palette (#F7EFE2 body, #2A2A2A markings), same clean soft-shaded vector-style illustration with smooth airbrushed gradient shading. Flat base colors + soft shading. NO painterly brushstrokes, NO paper grain (even on the scroll — keep it smooth), NO sketchy edges. Warm light from upper left. Bamboo + scroll centered with 12 percent margins. Use this as the avatar image for the AI Expert Chat."
+}

@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     const shouldStream = stream !== false
     const method = shouldStream ? "streamGenerateContent" : "generateContent"
     const suffix = shouldStream ? "?alt=sse" : ""
-    const endpoint = vertexUrl("gemini-2.5-flash", method) + suffix
+    const endpoint = vertexUrl("gemini-3-flash-preview", method) + suffix
 
     const upstream = await fetch(endpoint, {
       method: "POST",
@@ -76,7 +76,10 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         systemInstruction: { role: "user", parts: [{ text: systemInstruction }] },
         contents,
-        generationConfig: { temperature: 0.7 },
+        generationConfig: {
+          temperature: 0.7,
+          thinkingConfig: { thinkingBudget: -1 },
+        },
       }),
     })
 
