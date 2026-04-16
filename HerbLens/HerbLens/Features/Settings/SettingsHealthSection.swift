@@ -10,7 +10,7 @@ struct SettingsHealthSection: View {
     @Binding var draft: HealthProfileDraft
     let isDirty: Bool
     let isSaving: Bool
-    let onSave: () -> Void
+    let onSave: @Sendable () -> Void
 
     @State private var newGoal: String = ""
     @State private var newAllergy: String = ""

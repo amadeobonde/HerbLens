@@ -7,7 +7,7 @@ import SwiftUI
 /// gate the destructive call behind a confirmation dialog and a no-op closure injected
 /// from `SettingsView`.
 struct SettingsAccountSection: View {
-    let onDeleteAccount: () -> Void
+    let onDeleteAccount: @Sendable () -> Void
 
     @State private var showConfirmation: Bool = false
 

@@ -10,8 +10,8 @@ struct SettingsSubscriptionSection: View {
     let tier: SubscriptionTier
     let summary: String
     let isRestoring: Bool
-    let onUpgrade: () -> Void
-    let onRestore: () -> Void
+    let onUpgrade: @Sendable () -> Void
+    let onRestore: @Sendable () -> Void
 
     var body: some View {
         GlassCard {
@@ -50,7 +50,7 @@ struct SettingsSubscriptionSection: View {
             PrimaryButton("Upgrade to Pro", variant: .filled, action: onUpgrade)
         case .premium:
             PrimaryButton("Manage subscription", variant: .ghost) {
-                openAppStoreSubscriptions()
+                Task { @MainActor in Self.openAppStoreSubscriptions() }
             }
         }
     }
@@ -72,7 +72,7 @@ struct SettingsSubscriptionSection: View {
         .disabled(isRestoring)
     }
 
-    private func openAppStoreSubscriptions() {
+    private static func openAppStoreSubscriptions() {
         #if canImport(UIKit)
         guard let url = URL(string: "https://apps.apple.com/account/subscriptions") else { return }
         UIApplication.shared.open(url)

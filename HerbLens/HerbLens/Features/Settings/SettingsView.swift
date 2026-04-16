@@ -24,8 +24,10 @@ struct SettingsView: View {
                     SettingsProfileSection(
                         profile: viewModel.profile,
                         tier: viewModel.tier,
-                        onSignOut: {
-                            Task { await viewModel.signOut(auth: dependencies.auth) }
+                        onSignOut: { [viewModel, dependencies] in
+                            Task { @MainActor in
+                                await viewModel.signOut(auth: dependencies.auth)
+                            }
                         }
                     )
 
@@ -33,8 +35,8 @@ struct SettingsView: View {
                         draft: $viewModel.healthDraft,
                         isDirty: viewModel.isHealthDirty,
                         isSaving: viewModel.isSavingHealth,
-                        onSave: {
-                            Task {
+                        onSave: { [viewModel, dependencies] in
+                            Task { @MainActor in
                                 await viewModel.saveHealthProfile(using: dependencies.healthProfile)
                             }
                         }
@@ -44,9 +46,11 @@ struct SettingsView: View {
                         tier: viewModel.tier,
                         summary: viewModel.subscriptionSummary,
                         isRestoring: false,
-                        onUpgrade: { showPaywall = true },
-                        onRestore: {
-                            Task {
+                        onUpgrade: {
+                            Task { @MainActor in showPaywall = true }
+                        },
+                        onRestore: { [viewModel, dependencies] in
+                            Task { @MainActor in
                                 _ = try? await dependencies.subscriptions.restore()
                                 await viewModel.refreshTier(subscriptions: dependencies.subscriptions)
                             }
@@ -56,11 +60,13 @@ struct SettingsView: View {
                     SettingsLegalSection()
 
                     SettingsAccountSection(
-                        onDeleteAccount: {
+                        onDeleteAccount: { [viewModel, dependencies] in
                             // TODO(coordination): pipe through `AuthService.deleteAccount`
                             // once Instance 1/2 add it to the protocol. For now we sign
                             // the user out so the destructive intent is at least visible.
-                            Task { await viewModel.signOut(auth: dependencies.auth) }
+                            Task { @MainActor in
+                                await viewModel.signOut(auth: dependencies.auth)
+                            }
                         }
                     )
 

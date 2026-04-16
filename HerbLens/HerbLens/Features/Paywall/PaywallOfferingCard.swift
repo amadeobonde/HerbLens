@@ -190,7 +190,7 @@ struct PaywallOfferingCard: View {
         return Self.priceFormatter.string(from: NSNumber(value: perMonth)) ?? String(format: "$%.2f", perMonth)
     }
 
-    nonisolated(unsafe) private static let priceFormatter: NumberFormatter = {
+    private static let priceFormatter: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .currency
         f.maximumFractionDigits = 2
@@ -262,7 +262,7 @@ private extension Offering {
         return Double(String(String.UnicodeScalarView(stripped)))
     }
 
-    nonisolated(unsafe) static let parser: NumberFormatter = {
+    static let parser: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .currency
         f.locale = .current

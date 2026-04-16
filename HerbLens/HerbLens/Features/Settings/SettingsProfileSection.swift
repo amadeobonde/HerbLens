@@ -8,7 +8,7 @@ import SwiftUI
 struct SettingsProfileSection: View {
     let profile: UserProfile?
     let tier: SubscriptionTier
-    let onSignOut: () -> Void
+    let onSignOut: @Sendable () -> Void
 
     @State private var showSignOutConfirmation: Bool = false
 
@@ -33,7 +33,7 @@ struct SettingsProfileSection: View {
                 }
 
                 PrimaryButton("Sign out", variant: .ghost) {
-                    showSignOutConfirmation = true
+                    Task { @MainActor in showSignOutConfirmation = true }
                 }
             }
         }
