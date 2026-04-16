@@ -115,7 +115,7 @@ public struct HomeView: View {
                     }
                 }
 
-                MadeThisWeekRow(onBrowseRecipes: {
+                MadeThisWeekRow(onBrowseRecipes: { @Sendable in
                     // Recipes tab routing belongs to Instance 7. Placeholder closure for now.
                 })
 

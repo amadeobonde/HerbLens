@@ -5,8 +5,9 @@ import SwiftUI
 /// state. Once the brews source lands, swap the body for the populated horizontal
 /// scroll using the same `SectionHeader` shell.
 struct MadeThisWeekRow: View {
-    /// Closure fired by the empty-state CTA. Wired to the Recipes tab once routing exists.
-    let onBrowseRecipes: () -> Void
+    /// Closure fired by the empty-state CTA. Marked `@Sendable` because
+    /// `EmptyStateView.action` requires it; wired to the Recipes tab once routing exists.
+    let onBrowseRecipes: @Sendable () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
@@ -17,7 +18,7 @@ struct MadeThisWeekRow: View {
                 title: "No brews yet",
                 subtitle: "Make a recipe and snap a photo.",
                 ctaTitle: "Browse recipes",
-                action: { onBrowseRecipes() }
+                action: onBrowseRecipes
             )
             .frame(minHeight: 280)
             .padding(.horizontal, Theme.Spacing.md)
