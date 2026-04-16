@@ -328,3 +328,87 @@ so the same decoder handles both the schema fixture and the wire format.
 `@main` entry wires `.mock` so the app boots. Instance 2 will replace the body
 of `.live(...)` and swap `HerbLensApp.dependencies` to the live factory. Don't
 call `.live` from previews or tests — use `.mock`.
+
+### 10.8 Mocks moved to `Services/Mock/` (Instance 2)
+
+`MockServices.swift` and `SampleData.swift` now live at
+`HerbLens/HerbLens/Services/Mock/` (canonical per §3), not `App/`. The symbol
+names didn't change, so `AppDependencies.mock` and any `#Preview` calling
+`MockServices.X()` still works. Seed expanded from 1 → 5 plants:
+chamomile, peppermint, ginger, lavender, echinacea — `SampleData.plants`,
+`SampleData.highlightCollections`, `SampleData.scans` all return arrays now.
+
+### 10.9 Live services accept injectable client + `baseURL` for tests (Instance 2)
+
+Every `Supabase*Repository` init takes optional `client`, `session`, and
+`baseURL` parameters. Defaults read `SupabaseClientProvider.shared` /
+`URLSession.shared` / `AppConfig.supabaseURL` lazily, *not* at init time, so
+constructing a repo never trips the AppConfig fatal — that only fires when an
+actual edge-fn URL is built. Tests should pass `URLProtocolStub.session()` +
+`baseURL: URL(string: "http://localhost.invalid")!` so no AppConfig lookup
+happens. Auth-bearer tokens come from `self.client.auth.session.accessToken`,
+not the global provider — provide a stub `SupabaseClient` (or use
+`HerbLensTests/Services/TestSupabaseClient.noop`) when constructing repos in
+tests.
+
+### 10.10 Typed errors live services raise (Instance 2)
+
+Pattern-match these in feature code rather than `as NSError`:
+
+- `ScanError.quotaExceeded(limit: Int)` — free-tier hit the daily cap.
+  **This is the paywall trigger** — Vault/Scan instances should catch it
+  and present the paywall instead of surfacing as a generic error.
+  Free-tier limit constant: `SupabaseScansRepository.dailyFreeLimit` (currently 3).
+- `ServiceError.unauthenticated` — no Supabase session; route to sign-in.
+- `ServiceError.httpStatus(Int, body: String?)` — non-200 from an edge fn.
+- `ServiceError.decodingFailed(String)` — DTO mismatch; surfaces server bugs.
+- `ChatError.httpStatus(Int)` — `ai-chat` SSE refused the stream.
+- `ChatError.malformedEvent(String)` — SSE chunk wasn't `data: {"delta":...}`.
+
+Mock paywall preview: swap `AppDependencies.mock.scans` for
+`MockServices.ScansOverQuota()` — every write throws `quotaExceeded(3)`
+immediately so the paywall flow is exercisable without hitting the cap manually.
+
+### 10.11 Swift 6.2 `nonisolated` is required for test access (Instance 2)
+
+Extends §10.1 with the test-time corollary. With `MainActor` as the default
+isolation, anything a Swift Testing `#expect` closure or a test method touches
+needs to be reachable from a non-main context:
+
+- **Initializers** of types you construct in tests: `public nonisolated init(...)`.
+- **`static let` constants** referenced by `#expect` (e.g. `dailyFreeLimit`):
+  `public nonisolated static let ...`.
+- **Nested types whose `Equatable` conformance is compared by `#expect`**
+  (e.g. `LineEvent`): mark the type *and* its `static let` members
+  `nonisolated`.
+- **`@unchecked Sendable` final classes** (e.g. `RevenueCatSubscriptionService`)
+  still need `nonisolated init(...)` because the implicit `MainActor` defaults
+  also infer onto inits.
+- **Actor inits** *cannot* be `nonisolated` — Swift 6.2 rejects it. Just leave
+  actor inits unannotated; tests reach them via `await MockServices.Scans()`.
+
+Without this, you'll see `main actor-isolated initializer 'init()' cannot be
+called from outside of the actor` errors that can't be fixed in the test file.
+
+### 10.12 Low-RAM xcodebuild runner — use it (Instance 2)
+
+`scripts/test-services-low-mem.sh` runs `xcodebuild` with `-jobs 2`, no
+parallel testing, the smallest available iPhone simulator, and
+`SWIFT_COMPILATION_MODE=singlefile`. The default xcodebuild invocation parallel-
+compiles every SPM dep (Supabase + RevenueCat + Sentry + PostHog + Kingfisher)
+across all cores **and** boots a full simulator on top — on a 16 GB Mac that
+crashes the OS. Use the script for local test runs:
+
+```bash
+scripts/test-services-low-mem.sh                    # full test pass
+scripts/test-services-low-mem.sh --build-only       # app build only
+scripts/test-services-low-mem.sh --build-tests-only # also compile test bundle
+scripts/test-services-low-mem.sh --test-without-build
+scripts/test-services-low-mem.sh --verbose          # full xcodebuild output
+```
+
+Logs land in `scripts/.logs/test-services-<timestamp>.log`. The script
+filters output to compiler errors, warnings, and Swift Testing pass/fail
+lines — pipe through `--verbose` if you need raw xcodebuild output. If the
+simulator gets stuck "Busy" between runs, `xcrun simctl shutdown all`
+unsticks it.
