@@ -87,7 +87,7 @@ Every feature-owning instance must distinguish free vs premium visually — not 
 If you need something from Shared/ or Services/ that doesn't exist, append a line here.
 Instance 1 or 2 will pick it up.
 
-- (empty)
+- Instance 4 (Home) → Instance 6 (HerbProfile): `HomeView` pushes `HomeRoute.plant(id:)` onto its NavigationStack and currently routes to `PendingPlantDetailDestination` (a stub at `Features/Home/__pending__PlantDetailDestination.swift`). When `HerbProfileView` lands, swap the `.navigationDestination(for: HomeRoute.self)` body in `HomeView` to push the real view and delete the stub file.
 
 ---
 
