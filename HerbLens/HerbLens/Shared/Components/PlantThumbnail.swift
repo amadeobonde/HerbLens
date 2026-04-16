@@ -30,7 +30,7 @@ public struct PlantThumbnail: View {
                     case .empty:
                         skeleton
                     case .success(let image):
-                        image.resizable().scaledToFill()
+                        image.resizable().scaledToFill().frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
                     case .failure:
                         fallbackLocalOrPlaceholder
                     @unknown default:
@@ -38,13 +38,17 @@ public struct PlantThumbnail: View {
                     }
                 }
             } else if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
-                Image(local).resizable().scaledToFill()
+                Image(local)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
             } else if let url = URL(string: plant.imageUrl), !plant.imageUrl.isEmpty {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:      skeleton
                     case .success(let image):
-                        image.resizable().scaledToFill()
+                        image.resizable().scaledToFill().frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
                     case .failure:    placeholder
                     @unknown default: placeholder
                     }

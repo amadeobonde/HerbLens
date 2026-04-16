@@ -8,21 +8,22 @@ import Foundation
 /// name the user sees, not a stylized herbal illustration.
 public enum PlantWebImages {
     private static let lookup: [String: String] = [
-        // (keys are the plant's `commonName.lowercased()`)
-        // URLs verified as of 2026-04-16 via Wikipedia REST API `originalimage.source`.
-        // If Wikimedia renames files, refresh by hitting
-        // `https://en.wikipedia.org/api/rest_v1/page/summary/<Title>` and taking
-        // the `originalimage.source` field.
-        "chamomile":   "https://upload.wikimedia.org/wikipedia/commons/2/26/Kamomillasaunio_%28Matricaria_recutita%29.JPG",
-        "peppermint":  "https://upload.wikimedia.org/wikipedia/commons/7/72/Pfefferminze_natur_peppermint.jpg",
-        "ginger":      "https://upload.wikimedia.org/wikipedia/commons/1/18/Koeh-146-no_text.jpg",
-        "lavender":    "https://upload.wikimedia.org/wikipedia/commons/7/7e/Single_lavender_flower02.jpg",
-        "echinacea":   "https://upload.wikimedia.org/wikipedia/commons/8/8e/Echinacea_purpurea_Grandview_Prairie.jpg",
-        "lemon balm":  "https://upload.wikimedia.org/wikipedia/commons/7/70/Lemon_balm_plant.jpg",
-        "rosemary":    "https://upload.wikimedia.org/wikipedia/commons/a/a3/Rosemary_in_bloom.JPG",
-        "hibiscus":    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Hibiscus_flower_TZ.jpg",
-        "elderberry":  "https://upload.wikimedia.org/wikipedia/commons/6/61/Sambucus_nigra_004.jpg",
-        "dandelion":   "https://upload.wikimedia.org/wikipedia/commons/b/b2/Taraxacum_officinale_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-135.jpg",
+        // Modern photography sourced via Openverse (aggregates Unsplash + Flickr
+        // + Commons Featured Pictures). Each URL is CC-licensed and served by a
+        // stable CDN (`live.staticflickr.com` for Flickr, upload.wikimedia.org for
+        // Commons). Refresh by hitting:
+        // `https://api.openverse.org/v1/images/?q=<plant>&license=cc0,by,by-sa&page_size=1`
+        // and replacing the URL — no API key required.
+        "chamomile":   "https://live.staticflickr.com/3827/9003193090_01b6c86e3a_b.jpg",
+        "peppermint":  "https://live.staticflickr.com/8154/7777976014_b73ef12597_b.jpg",
+        "ginger":      "https://live.staticflickr.com/3331/3478499255_5c633c76ae_b.jpg",
+        "lavender":    "https://live.staticflickr.com/1340/562028359_a104d7c3fc.jpg",
+        "echinacea":   "https://live.staticflickr.com/4506/37344056570_e4f6d353f0_b.jpg",
+        "lemon balm":  "https://upload.wikimedia.org/wikipedia/commons/3/36/Melissa_officinalis_Bee_Balm%2CLemon_Balm_%E1%83%91%E1%83%90%E1%83%A0%E1%83%90%E1%83%9B%E1%83%91%E1%83%9D.JPG",
+        "rosemary":    "https://live.staticflickr.com/3896/14562574928_77fe8f4252_b.jpg",
+        "hibiscus":    "https://live.staticflickr.com/8697/17175399565_4442910900_b.jpg",
+        "elderberry":  "https://live.staticflickr.com/6093/6222073617_4b1bac0800_b.jpg",
+        "dandelion":   "https://live.staticflickr.com/68/177851662_b2622b4238_b.jpg",
     ]
 
     /// Returns a stable web URL for the plant, or `nil` if we haven't curated one.
