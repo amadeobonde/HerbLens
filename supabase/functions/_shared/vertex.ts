@@ -27,10 +27,14 @@ export function getLocation(): string {
   return Deno.env.get("GCP_LOCATION") || "us-central1"
 }
 
-export function vertexUrl(model: string, method: string): string {
+export function vertexUrl(model: string, method: string, locationOverride?: string): string {
   const project = getProjectId()
-  const location = getLocation()
-  return `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:${method}`
+  const location = locationOverride ?? getLocation()
+  // The "global" endpoint is aiplatform.googleapis.com (no region prefix).
+  const host = location === "global"
+    ? "aiplatform.googleapis.com"
+    : `${location}-aiplatform.googleapis.com`
+  return `https://${host}/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:${method}`
 }
 
 function b64url(input: string | Uint8Array): string {
