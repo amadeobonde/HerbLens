@@ -12,8 +12,10 @@ import Foundation
 /// `nonisolated` so they remain `Sendable` across actors.
 enum HomePreviewData {
     /// All 8 v1 collections in display order. Mix of free + premium so previews
-    /// cover both gating paths.
-    static let collections: [HighlightCollection] = [
+    /// cover both gating paths. `nonisolated` so tests and the nonisolated
+    /// `CollectionsRepo.highlightCollections()` can read it without hopping
+    /// onto the main actor (§10.11).
+    nonisolated static let collections: [HighlightCollection] = [
         HighlightCollection(
             id: "collection-sleep-aids",
             title: "Sleep Aids",
