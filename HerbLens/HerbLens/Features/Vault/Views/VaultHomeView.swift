@@ -95,13 +95,35 @@ public struct VaultHomeView: View {
 
     // MARK: - Picker
 
+    /// Custom glass-capsule segmented picker. The default `.segmented` `Picker`
+    /// renders a dark UISegmentedControl strip that fights the sage palette;
+    /// this hand-rolled version uses two `PrimaryButton`-style glass capsules
+    /// inside a single rounded sage container.
     private var picker: some View {
-        Picker("Vault section", selection: $section) {
-            ForEach(Section.allCases, id: \.self) { section in
-                Text(section.title).tag(section)
+        HStack(spacing: 0) {
+            ForEach(Section.allCases, id: \.self) { option in
+                Button {
+                    withAnimation(Theme.Motion.snappy) { section = option }
+                } label: {
+                    Text(option.title)
+                        .font(Theme.Font.callout)
+                        .fontWeight(section == option ? .semibold : .regular)
+                        .foregroundStyle(section == option ? Theme.Color.bone : Theme.Color.forest)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Theme.Spacing.xs)
+                        .background(
+                            Capsule()
+                                .fill(section == option ? Theme.Color.forest : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
             }
         }
-        .pickerStyle(.segmented)
+        .padding(4)
+        .background(
+            Capsule()
+                .fill(Theme.Color.sage.opacity(0.18))
+        )
     }
 
     // MARK: - Filter chips wiring
