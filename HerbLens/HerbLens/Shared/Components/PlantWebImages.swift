@@ -8,25 +8,25 @@ import Foundation
 /// name the user sees, not a stylized herbal illustration.
 public enum PlantWebImages {
     private static let lookup: [String: String] = [
-        // Modern photography, each URL's title verified to contain the plant
-        // name so we don't ship off-topic results (earlier peppermint query
-        // returned candy canes, ginger returned a street photo — swapped for
-        // explicitly-tagged plant photos).
+        // Visually verified Wikipedia Commons photos. Every URL was downloaded
+        // and inspected by a human (or Claude with image-read access) to confirm
+        // the photo actually depicts the named plant — not a tagged-but-wrong
+        // candy/shrimp/rabbit. Wikipedia infobox images are community-curated so
+        // they're more reliable than search-API first-results.
         //
-        // Refresh via Openverse:
-        //   curl "https://api.openverse.org/v1/images/?q=<plant>+<qualifier>&license=cc0,by,by-sa&page_size=3"
-        // Use qualifier keywords ("flower", "leaves", "root", "plant") to
-        // disambiguate common-noun plant names.
-        "chamomile":   "https://live.staticflickr.com/305/19303821812_075e710866_b.jpg",                 // "Chamomile Flowers"
-        "peppermint":  "https://live.staticflickr.com/4104/4843828911_2fccfa2ae4_b.jpg",                 // "Peppermint leaves"
-        "ginger":      "https://live.staticflickr.com/4479/37310945730_8f7e9eb5b8_b.jpg",                // "Ginger root"
-        "lavender":    "https://live.staticflickr.com/6121/5969843375_06402bd91e_b.jpg",                 // "Close up of lavender flower"
-        "echinacea":   "https://live.staticflickr.com/6130/5959428768_8c27b9dc99_b.jpg",                 // "Echinacea Purpurea"
-        "lemon balm":  "https://live.staticflickr.com/7125/7478979856_a5b6ceee4d_b.jpg",                 // "Melissa officinalis"
-        "rosemary":    "https://live.staticflickr.com/3896/14562574928_77fe8f4252_b.jpg",                 // rosemary plant
-        "hibiscus":    "https://live.staticflickr.com/7462/16071669752_4ed9995f7e_b.jpg",                 // "Hibiscus Flower Shot"
-        "elderberry":  "https://live.staticflickr.com/8028/7636731788_046b27ee79_b.jpg",                 // "elderberry berry"
-        "dandelion":   "https://live.staticflickr.com/6067/6089305754_5f64a264f4_b.jpg",                 // "Dandelion Field"
+        // To refresh: pull the originalimage.source from
+        //   https://en.wikipedia.org/api/rest_v1/page/summary/<scientific_name>
+        // then download + visually verify before swapping the URL in.
+        "chamomile":   "https://upload.wikimedia.org/wikipedia/commons/c/c8/Matricaria_February_2008-1.jpg",
+        "peppermint":  "https://upload.wikimedia.org/wikipedia/commons/7/72/Pfefferminze_natur_peppermint.jpg",
+        "ginger":      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Berlin-Dahlem%2C_botanischer_Garten%2C_Zingiber_officinale.JPG/960px-Berlin-Dahlem%2C_botanischer_Garten%2C_Zingiber_officinale.JPG",
+        "lavender":    "https://upload.wikimedia.org/wikipedia/commons/7/7e/Single_lavender_flower02.jpg",
+        "echinacea":   "https://upload.wikimedia.org/wikipedia/commons/8/8e/Echinacea_purpurea_Grandview_Prairie.jpg",
+        "lemon balm":  "https://upload.wikimedia.org/wikipedia/commons/7/70/Lemon_balm_plant.jpg",
+        "rosemary":    "https://upload.wikimedia.org/wikipedia/commons/a/a3/Rosemary_in_bloom.JPG",
+        "hibiscus":    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Hibiscus_flower_TZ.jpg",
+        "elderberry":  "https://upload.wikimedia.org/wikipedia/commons/6/61/Sambucus_nigra_004.jpg",
+        "dandelion":   "https://upload.wikimedia.org/wikipedia/commons/4/4f/DandelionFlower.jpg",
     ]
 
     /// Returns a stable web URL for the plant, or `nil` if we haven't curated one.
