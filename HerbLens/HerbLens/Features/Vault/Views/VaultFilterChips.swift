@@ -74,15 +74,17 @@ public struct VaultFilterChips: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .foregroundStyle(isSelected ? Theme.Color.bone : Theme.Color.textPrimary)
-            .background {
-                if isSelected {
-                    Capsule().fill(Theme.Color.forest)
-                } else {
-                    Color.clear
-                }
-            }
-            .glass(.capsule)
+            .foregroundStyle(isSelected ? Theme.Color.bone : Theme.Color.forest)
+            .background(
+                Capsule().fill(isSelected ? Theme.Color.forest : Theme.Color.bone)
+            )
+            .overlay(
+                // Subtle sage outline only on unselected chips so they read as
+                // distinct from the bone page background. Selected chip is solid
+                // forest so no outline needed.
+                Capsule()
+                    .stroke(Theme.Color.sage.opacity(isSelected ? 0 : 0.45), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
