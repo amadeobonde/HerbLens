@@ -13,17 +13,19 @@ public struct HomeView: View {
     @State private var mascotRotation: Double = 0
 
     /// Navigation closures so ContentView can drive tab switches when a Home button
-    /// is tapped. Every closure is optional for preview/test ergonomics.
-    public let onScanTap: (@Sendable @MainActor () -> Void)?
-    public let onRecipesTap: (@Sendable @MainActor () -> Void)?
-    public let onVaultTap: (@Sendable @MainActor () -> Void)?
-    public let onChatTap: (@Sendable @MainActor () -> Void)?
+    /// is tapped. Plain `() -> Void` (not @Sendable) because both caller and callee
+    /// are @MainActor SwiftUI views — the @Sendable wrapping was silently dropping
+    /// the tab-switch mutation.
+    public var onScanTap: (() -> Void) = {}
+    public var onRecipesTap: (() -> Void) = {}
+    public var onVaultTap: (() -> Void) = {}
+    public var onChatTap: (() -> Void) = {}
 
     public init(
-        onScanTap: (@Sendable @MainActor () -> Void)? = nil,
-        onRecipesTap: (@Sendable @MainActor () -> Void)? = nil,
-        onVaultTap: (@Sendable @MainActor () -> Void)? = nil,
-        onChatTap: (@Sendable @MainActor () -> Void)? = nil
+        onScanTap: @escaping () -> Void = {},
+        onRecipesTap: @escaping () -> Void = {},
+        onVaultTap: @escaping () -> Void = {},
+        onChatTap: @escaping () -> Void = {}
     ) {
         self.onScanTap = onScanTap
         self.onRecipesTap = onRecipesTap
@@ -113,16 +115,14 @@ public struct HomeView: View {
                 HomeGreetingHeader(rotation: mascotRotation)
                     .padding(.top, Theme.Spacing.xs)
 
-                ScanCTAButton {
-                    onScanTap?()
-                }
-                .padding(.horizontal, Theme.Spacing.md)
+                ScanCTAButton(action: onScanTap)
+                    .padding(.horizontal, Theme.Spacing.md)
 
                 HomeQuickActionsRow(
-                    onScan: { onScanTap?() },
-                    onRecipes: { onRecipesTap?() },
-                    onVault: { onVaultTap?() },
-                    onChat: { onChatTap?() }
+                    onScan: onScanTap,
+                    onRecipes: onRecipesTap,
+                    onVault: onVaultTap,
+                    onChat: onChatTap
                 )
 
                 if !data.featured.isEmpty {

@@ -33,10 +33,10 @@ struct ContentView: View {
         TabView(selection: $selection) {
             Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
                 HomeView(
-                    onScanTap: { selection = .scan },
-                    onRecipesTap: { selection = .recipes },
-                    onVaultTap: { selection = .vault },
-                    onChatTap: { showPaywallStub = true }   // Chat sheet TBD; paywall stub for now
+                    onScanTap: { [self] in selection = .scan },
+                    onRecipesTap: { [self] in selection = .recipes },
+                    onVaultTap: { [self] in selection = .vault },
+                    onChatTap: { [self] in showPaywallStub = true }
                 )
             }
 
