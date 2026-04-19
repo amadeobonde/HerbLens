@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Hard-coded "Premium glow" feature list shown on the paywall. Ordering intentional:
-/// headline conversion drivers first (unlimited scans + AI chat), then content depth,
+/// headline conversion drivers first (AI chat + detailed insights), then content depth,
 /// then polish. Copy is stable — free-tier footnotes highlight what the user is missing.
 nonisolated struct PaywallFeature: Identifiable, Hashable, Sendable {
     let id: String
@@ -11,10 +11,10 @@ nonisolated struct PaywallFeature: Identifiable, Hashable, Sendable {
 
     static let all: [PaywallFeature] = [
         PaywallFeature(
-            id: "unlimited-scans",
-            icon: "camera.viewfinder",
-            title: "Unlimited plant scans",
-            freeFootnote: "Free tier: 3 scans a day"
+            id: "detailed-health",
+            icon: "chart.bar.fill",
+            title: "Detailed health score breakdowns",
+            freeFootnote: "Free tier: overall score only"
         ),
         PaywallFeature(
             id: "ai-chat",
@@ -31,8 +31,8 @@ nonisolated struct PaywallFeature: Identifiable, Hashable, Sendable {
         PaywallFeature(
             id: "deeper-insights",
             icon: "sparkles",
-            title: "Deeper health insights powered by Gemini 3 Pro",
-            freeFootnote: "Free tier: standard insights"
+            title: "Personalized warnings and contraindication detail",
+            freeFootnote: "Free tier: basic warnings"
         ),
         PaywallFeature(
             id: "animations-haptics",

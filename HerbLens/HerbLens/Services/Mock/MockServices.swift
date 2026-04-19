@@ -14,7 +14,10 @@ nonisolated enum MockServices {
         func signOut() async throws {}
         func sendMagicLink(email: String) async throws {}
         func verifyEmailOTP(email: String, token: String) async throws -> UserProfile { SampleData.userProfile }
+        func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile { SampleData.userProfile }
+        func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile { SampleData.userProfile }
         func completeOnboarding(userID: String) async throws {}
+        func updateTier(userID: String, tier: SubscriptionTier) async throws {}
     }
 
     // MARK: - Plants
@@ -55,19 +58,6 @@ nonisolated enum MockServices {
     }
 
     // MARK: - Scans
-
-    /// Always-quota-exceeded variant so feature instances can preview the paywall trigger.
-    /// Use in Previews by swapping `AppDependencies.mock.scans` with `MockServices.ScansOverQuota()`.
-    nonisolated struct ScansOverQuota: ScansRepository {
-        nonisolated init() {}
-        func identify(imageData: Data) async throws -> IdentifyResult {
-            throw ScanError.quotaExceeded(limit: 3)
-        }
-        func save(_ scan: Scan) async throws -> Scan { throw ScanError.quotaExceeded(limit: 3) }
-        func list(userID: String, sort: ScanSort, filter: ScanFilter) async throws -> [Scan] { SampleData.scans }
-        func toggleFavorite(scanID: String) async throws {}
-        func delete(scanID: String) async throws {}
-    }
 
     actor Scans: ScansRepository {
         init() {}

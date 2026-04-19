@@ -60,6 +60,16 @@ actor SpyAuthService: AuthService {
         return profileResult
     }
 
+    func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile {
+        fixedUserID = profileResult.id
+        return profileResult
+    }
+
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile {
+        fixedUserID = profileResult.id
+        return profileResult
+    }
+
     func completeOnboarding(userID: String) async throws {
         calls.completeOnboarding.append(userID)
         if failComplete { throw Failure.completeFailed }

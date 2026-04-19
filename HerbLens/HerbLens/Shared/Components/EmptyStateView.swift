@@ -25,7 +25,7 @@ public struct EmptyStateView: View {
 
     public var body: some View {
         VStack(spacing: Theme.Spacing.md) {
-            MascotBadge(mascot, size: 140)
+            MascotBadge(mascot, size: 140, behavior: mascot == .sleeping ? .sleepy : .idle)
 
             VStack(spacing: Theme.Spacing.xs) {
                 Text(title)

@@ -8,7 +8,7 @@ import UIKit
 @Observable
 @MainActor
 public final class ScanViewModel {
-    public private(set) var state: ScanState = .idle(remaining: nil)
+    public private(set) var state: ScanState = .idle
     public private(set) var tier: SubscriptionTier = .free
 
     private let scans: any ScansRepository
@@ -16,11 +16,6 @@ public final class ScanViewModel {
     private let subscriptions: any SubscriptionService
     private let imageProcessor: any ImageProcessing
     private let userID: String?
-
-    /// Local counter we use as a stop-gap until `ScansRepository` exposes a
-    /// `remainingToday` query. Incremented on every successful identify so the idle chip
-    /// counts down without a network round-trip per screen.
-    private var scansUsedThisSessionFree: Int = 0
 
     public init(
         scans: any ScansRepository,
@@ -39,15 +34,12 @@ public final class ScanViewModel {
     public func onAppear() async {
         let currentTier = await subscriptions.currentTier()
         self.tier = currentTier
-        self.state = .idle(remaining: remainingForIdle())
+        self.state = .idle
     }
 
     public func refreshTier() async {
         let currentTier = await subscriptions.currentTier()
         self.tier = currentTier
-        if case .idle = state {
-            state = .idle(remaining: remainingForIdle())
-        }
     }
 
     public func submit(image: UIImage) async {
@@ -57,15 +49,7 @@ public final class ScanViewModel {
             let identification = try await scans.identify(imageData: data)
             let result = ScanResult(image: image, identification: identification)
             state = .result(result)
-            if tier == .free {
-                scansUsedThisSessionFree += 1
-            }
             ScanHaptics.success(tier: tier)
-        } catch let error as ScanError {
-            switch error {
-            case .quotaExceeded(let limit):
-                state = .quotaExceeded(limit: limit)
-            }
         } catch {
             state = .failed(.from(error))
         }
@@ -95,14 +79,8 @@ public final class ScanViewModel {
         )
         do {
             let persisted = try await scans.save(scan)
-            resetToIdle()
+            state = .idle
             return persisted
-        } catch let error as ScanError {
-            switch error {
-            case .quotaExceeded(let limit):
-                state = .quotaExceeded(limit: limit)
-            }
-            return nil
         } catch {
             state = .failed(.from(error))
             return nil
@@ -110,25 +88,10 @@ public final class ScanViewModel {
     }
 
     public func reset() {
-        resetToIdle()
+        state = .idle
     }
 
     public func dismissError() {
-        resetToIdle()
+        state = .idle
     }
-
-    private func resetToIdle() {
-        state = .idle(remaining: remainingForIdle())
-    }
-
-    private func remainingForIdle() -> Int? {
-        guard tier == .free else { return nil }
-        return max(0, freeLimit - scansUsedThisSessionFree)
-    }
-
-    /// Kept aligned with `SupabaseScansRepository.dailyFreeLimit` (3). Swap to the real
-    /// limit when the pending `remainingToday` helper lands.
-    public static let freeLimitFallback: Int = 3
-
-    private var freeLimit: Int { Self.freeLimitFallback }
 }

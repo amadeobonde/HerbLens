@@ -47,10 +47,6 @@ public struct RecipeGenerator: Sendable {
         guard let http = response as? HTTPURLResponse else {
             throw ServiceError.httpStatus(-1, body: nil)
         }
-        if http.statusCode == 429 {
-            // Free-tier daily generation cap hit — callers present the paywall.
-            throw ScanError.quotaExceeded(limit: 3)
-        }
         guard http.statusCode == 200 else {
             throw ServiceError.httpStatus(http.statusCode, body: String(data: data, encoding: .utf8))
         }

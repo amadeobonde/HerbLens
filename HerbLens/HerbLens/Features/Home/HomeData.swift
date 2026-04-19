@@ -11,6 +11,7 @@ public nonisolated struct HomeData: Sendable, Equatable {
     /// Lookup so the recents row can render plant name/thumbnail without a second fetch.
     public let recentPlantsByID: [String: Plant]
     public let tier: SubscriptionTier
+    public let totalScanCount: Int
 
     public init(
         featured: [Plant],
@@ -18,7 +19,8 @@ public nonisolated struct HomeData: Sendable, Equatable {
         premiumCollections: [HighlightCollection],
         recents: [Scan],
         recentPlantsByID: [String: Plant],
-        tier: SubscriptionTier
+        tier: SubscriptionTier,
+        totalScanCount: Int = 0
     ) {
         self.featured = featured
         self.freeCollections = freeCollections
@@ -26,5 +28,6 @@ public nonisolated struct HomeData: Sendable, Equatable {
         self.recents = recents
         self.recentPlantsByID = recentPlantsByID
         self.tier = tier
+        self.totalScanCount = totalScanCount
     }
 }

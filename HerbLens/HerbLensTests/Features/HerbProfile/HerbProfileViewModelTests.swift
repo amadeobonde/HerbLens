@@ -56,6 +56,10 @@ nonisolated struct HerbProfileStubAuthService: AuthService {
     }
     func signOut() async throws {}
     func sendMagicLink(email: String) async throws {}
+    func verifyEmailOTP(email: String, token: String) async throws -> UserProfile { throw StubError.notImplemented }
+    func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile { throw StubError.notImplemented }
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile { throw StubError.notImplemented }
+    func completeOnboarding(userID: String) async throws {}
 
     enum StubError: Error { case notImplemented }
 }

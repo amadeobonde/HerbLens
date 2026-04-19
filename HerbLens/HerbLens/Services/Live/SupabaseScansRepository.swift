@@ -1,32 +1,23 @@
 import Foundation
 import Supabase
 
-/// Scans vault + AI identification. Enforces the free-tier quota of 3 scans per calendar
-/// day before hitting the edge function, so the app can show the paywall immediately
-/// instead of consuming a Gemini call we're going to discard.
+/// Scans vault + AI identification. All users get unlimited scans; premium gates content
+/// depth (health score breakdowns, recipes, AI chat), not scan count.
 public struct SupabaseScansRepository: ScansRepository {
-    public nonisolated static let dailyFreeLimit = 3
-
     private let client: SupabaseClient
     private let session: URLSession
-    private let subscriptions: (any SubscriptionService)?
     private let plants: any PlantsRepository
-    private let now: @Sendable () -> Date
     private let baseURL: URL?
 
     public nonisolated init(
         client: SupabaseClient? = nil,
         session: URLSession = .shared,
-        subscriptions: (any SubscriptionService)? = nil,
         plants: (any PlantsRepository)? = nil,
-        now: @escaping @Sendable () -> Date = Date.init,
         baseURL: URL? = nil
     ) {
         self.client = client ?? SupabaseClientProvider.shared
         self.session = session
-        self.subscriptions = subscriptions
         self.plants = plants ?? SupabasePlantsRepository()
-        self.now = now
         self.baseURL = baseURL
     }
 
@@ -35,8 +26,6 @@ public struct SupabaseScansRepository: ScansRepository {
     // MARK: - Identify (edge fn)
 
     public func identify(imageData: Data) async throws -> IdentifyResult {
-        try await enforceQuotaIfNeeded()
-
         let url = resolvedBaseURL.appendingPathComponent("/functions/v1/identify-plant")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -59,7 +48,6 @@ public struct SupabaseScansRepository: ScansRepository {
     // MARK: - CRUD
 
     public func save(_ scan: Scan) async throws -> Scan {
-        try await enforceQuotaIfNeeded()
         let insert = ScanInsert(from: scan)
         let row: ScanRow = try await client.from("scans")
             .insert(insert, returning: .representation)
@@ -130,34 +118,6 @@ public struct SupabaseScansRepository: ScansRepository {
             .delete()
             .eq("id", value: scanID)
             .execute()
-    }
-
-    // MARK: - Quota
-
-    private func enforceQuotaIfNeeded() async throws {
-        guard let subscriptions else { return } // no subscription service injected → no enforcement
-        let tier = await subscriptions.currentTier()
-        guard tier == .free else { return }
-        guard let userID = client.auth.currentUser?.id.uuidString else {
-            // No session → unauthenticated scans aren't allowed, but that's the auth layer's
-            // problem; we simply skip quota enforcement here.
-            return
-        }
-        let count = try await dailyScanCount(userID: userID)
-        if count >= Self.dailyFreeLimit {
-            throw ScanError.quotaExceeded(limit: Self.dailyFreeLimit)
-        }
-    }
-
-    func dailyScanCount(userID: String) async throws -> Int {
-        let startOfDay = Calendar.current.startOfDay(for: now())
-        let iso = ISO8601DateFormatter().string(from: startOfDay)
-        let response = try await client.from("scans")
-            .select("id", head: true, count: .exact)
-            .eq("user_id", value: userID)
-            .gte("scanned_at", value: iso)
-            .execute()
-        return response.count ?? 0
     }
 
     // MARK: - Identify envelope → domain

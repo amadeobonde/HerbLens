@@ -48,7 +48,7 @@ public extension AppDependencies {
         return AppDependencies(
             auth: SupabaseAuthService(),
             plants: SupabasePlantsRepository(),
-            scans: SupabaseScansRepository(subscriptions: subscriptions),
+            scans: SupabaseScansRepository(),
             chat: SupabaseChatRepository(),
             subscriptions: subscriptions,
             healthProfile: SupabaseHealthProfileRepository()

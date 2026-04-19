@@ -16,55 +16,59 @@ import SwiftUI
 /// keeps the nav shell a stable integration surface.
 struct ContentView: View {
     @Environment(\.dependencies) private var dependencies
-    @State private var selection: AppTab = .scan
+    @State private var selection: AppTab = .home
     @State private var showPaywallStub = false
     @State private var tier: SubscriptionTier = .free
     @State private var userDisplayName: String = "Guest"
+    @State private var fabExpanded = false
+    @State private var activeFlow: FABFlow?
 
-    /// Top-level tab identity. Distinct from SwiftUI's `Tab` builder type.
-    enum AppTab: Hashable { case home, scan, recipes, vault, profile }
+    enum AppTab: Hashable { case home, recipes, vault, profile }
 
     var body: some View {
-        // Tab order is deliberate: Scan sits in the center (3rd of 5) because
-        // identify-a-plant is the primary use case per the product brief. Thumb
-        // hit-zone on a phone naturally falls under the center tab. The app
-        // launches directly on Scan (see `selection` default) so first-time
-        // users can take a photo without a single tap.
-        TabView(selection: $selection) {
-            Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
-                HomeView(
-                    onScanTap: { [self] in selection = .scan },
-                    onRecipesTap: { [self] in selection = .recipes },
-                    onVaultTap: { [self] in selection = .vault },
-                    onChatTap: { [self] in showPaywallStub = true }
-                )
-            }
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selection) {
+                Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
+                    HomeView(
+                        onScanTap: { fabExpanded = true }
+                    )
+                }
 
-            Tab("Recipes", systemImage: Theme.Icon.recipes, value: AppTab.recipes) {
-                RecipesHomeView()
-            }
+                Tab("Recipes", systemImage: Theme.Icon.recipes, value: AppTab.recipes) {
+                    RecipesHomeView()
+                }
 
-            Tab("Scan", systemImage: Theme.Icon.scan, value: AppTab.scan) {
+                Tab("Vault", systemImage: Theme.Icon.vault, value: AppTab.vault) {
+                    VaultHomeView(herbs: [], brews: [])
+                }
+
+                Tab("Profile", systemImage: Theme.Icon.profile, value: AppTab.profile) {
+                    ProfileTabPlaceholder(
+                        displayName: userDisplayName,
+                        tier: tier,
+                        showPaywall: triggerPaywallStub
+                    )
+                }
+            }
+            .tabViewStyle(.sidebarAdaptable)
+            .tabBarMinimizeBehavior(.onScrollDown)
+            .tint(Theme.Color.sage)
+
+            FABOverlay(isExpanded: $fabExpanded, activeFlow: $activeFlow)
+        }
+        .fullScreenCover(item: $activeFlow) { flow in
+            switch flow {
+            case .photoScan:
                 ScanView(
                     onOpenVault: { @Sendable in Task { @MainActor in selection = .vault } },
                     onPaywall: { @Sendable in Task { @MainActor in showPaywallStub = true } }
                 )
-            }
-
-            Tab("Vault", systemImage: Theme.Icon.vault, value: AppTab.vault) {
-                VaultHomeView(herbs: [], brews: [])
-            }
-
-            Tab("Profile", systemImage: Theme.Icon.profile, value: AppTab.profile) {
-                ProfileTabPlaceholder(
-                    displayName: userDisplayName,
-                    tier: tier,
-                    showPaywall: triggerPaywallStub
-                )
+            case .barcodeScan:
+                BarcodeScannerView()
+            case .plantSearch:
+                PlantSearchView()
             }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
-        .tint(Theme.Color.sage)
         .task {
             tier = await dependencies.subscriptions.currentTier()
             userDisplayName = await resolveDisplayName()

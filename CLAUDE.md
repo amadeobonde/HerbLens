@@ -355,19 +355,16 @@ tests.
 
 Pattern-match these in feature code rather than `as NSError`:
 
-- `ScanError.quotaExceeded(limit: Int)` — free-tier hit the daily cap.
-  **This is the paywall trigger** — Vault/Scan instances should catch it
-  and present the paywall instead of surfacing as a generic error.
-  Free-tier limit constant: `SupabaseScansRepository.dailyFreeLimit` (currently 3).
 - `ServiceError.unauthenticated` — no Supabase session; route to sign-in.
 - `ServiceError.httpStatus(Int, body: String?)` — non-200 from an edge fn.
 - `ServiceError.decodingFailed(String)` — DTO mismatch; surfaces server bugs.
 - `ChatError.httpStatus(Int)` — `ai-chat` SSE refused the stream.
 - `ChatError.malformedEvent(String)` — SSE chunk wasn't `data: {"delta":...}`.
 
-Mock paywall preview: swap `AppDependencies.mock.scans` for
-`MockServices.ScansOverQuota()` — every write throws `quotaExceeded(3)`
-immediately so the paywall flow is exercisable without hitting the cap manually.
+Note: `ScanError.quotaExceeded` was removed — all users get unlimited scans.
+Premium gates content depth (health score breakdowns, recipes, AI chat, detailed
+warnings), not scan count. The paywall is triggered by tier-based UI gates in
+feature views, not by service-layer errors.
 
 ### 10.11 Swift 6.2 `nonisolated` is required for test access (Instance 2)
 
@@ -376,7 +373,7 @@ isolation, anything a Swift Testing `#expect` closure or a test method touches
 needs to be reachable from a non-main context:
 
 - **Initializers** of types you construct in tests: `public nonisolated init(...)`.
-- **`static let` constants** referenced by `#expect` (e.g. `dailyFreeLimit`):
+- **`static let` constants** referenced by `#expect`:
   `public nonisolated static let ...`.
 - **Nested types whose `Equatable` conformance is compared by `#expect`**
   (e.g. `LineEvent`): mark the type *and* its `static let` members

@@ -43,7 +43,7 @@ struct WelcomeView: View {
 
                 PrimaryButton("Get started", action: onContinue)
                     .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.bottom, Theme.Spacing.xl)
+                    .padding(.bottom, 72)
             }
 
             if let onSkip {

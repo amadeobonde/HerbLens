@@ -15,7 +15,20 @@ public protocol AuthService: Sendable {
     /// code-entry flow after `sendMagicLink`.
     func verifyEmailOTP(email: String, token: String) async throws -> UserProfile
 
+    /// Signs in with Apple via Supabase `signInWithIdToken`. The `idToken` and `nonce`
+    /// come from `ASAuthorizationAppleIDCredential`. Supabase verifies the token against
+    /// Apple's JWKS and creates/finds the user.
+    func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile
+
+    /// Signs in with Google via Supabase `signInWithIdToken`. The `idToken` and
+    /// `accessToken` come from `GIDSignInResult`. Supabase verifies the token against
+    /// Google's JWKS and creates/finds the user.
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile
+
     /// Flips `user_profiles.onboarding_completed` to `true`. Called when the onboarding
     /// wizard finishes successfully, after the `HealthProfile` has been saved.
     func completeOnboarding(userID: String) async throws
+
+    /// Debug-only: updates a user's subscription tier directly.
+    func updateTier(userID: String, tier: SubscriptionTier) async throws
 }

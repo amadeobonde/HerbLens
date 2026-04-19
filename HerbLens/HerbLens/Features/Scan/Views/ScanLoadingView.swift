@@ -13,7 +13,6 @@ struct ScanLoadingView: View {
 
     let capturedImage: UIImage?
 
-    @State private var rotation: Double = -4
     @State private var copyIndex: Int = 0
 
     init(capturedImage: UIImage? = nil) {
@@ -26,12 +25,7 @@ struct ScanLoadingView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: Theme.Spacing.lg) {
-                MascotBadge(.scanning, size: 180)
-                    .rotationEffect(.degrees(rotation))
-                    .animation(
-                        .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
-                        value: rotation
-                    )
+                MascotBadge(.scanning, size: 180, behavior: .working)
 
                 GlassCard(tone: .subtle) {
                     VStack(spacing: Theme.Spacing.xs) {
@@ -53,7 +47,6 @@ struct ScanLoadingView: View {
             .padding(Theme.Spacing.xl)
         }
         .task {
-            rotation = 4
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 1_400_000_000)
                 if Task.isCancelled { break }

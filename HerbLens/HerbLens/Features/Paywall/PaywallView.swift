@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Monetization entry point. Presented modally from Settings, Scan (quota), Recipes,
+/// Monetization entry point. Presented modally from Settings, Recipes,
 /// Chat, and HerbProfile (paywalled tabs). Reads services from `@Environment` and keeps
 /// its own `PaywallViewModel` so the view model's lifecycle matches the sheet.
 ///

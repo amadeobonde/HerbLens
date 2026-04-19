@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Top-level onboarding flow rendered as a 4-page horizontal pager. Pages, in order:
-/// `welcome` → `goals` → `allergiesMeds` → `final`. Forward navigation is driven
-/// by the call-to-action button on each page; backward navigation works via the
-/// native page-style swipe. Sage progress dots ride at the bottom.
+/// Top-level onboarding flow rendered as a 6-page horizontal pager:
+/// welcome → goals → allergies/meds → experience → value prop → account.
+/// Forward navigation is driven by the CTA on each page; backward navigation
+/// works via the native page-style swipe. Sage progress dots ride at the bottom.
 public struct OnboardingPagerView: View {
     @Environment(\.dependencies) private var dependencies
     @State private var page: OnboardingPage = .welcome
@@ -41,8 +41,7 @@ public struct OnboardingPagerView: View {
 
             TabView(selection: $page) {
                 WelcomeView(
-                    onContinue: { advance(to: .goals) },
-                    onSkip: { jumpToFinal() }
+                    onContinue: { advance(to: .goals) }
                 )
                 .tag(OnboardingPage.welcome)
 
@@ -54,18 +53,27 @@ public struct OnboardingPagerView: View {
 
                 AllergiesMedicationsPage(
                     viewModel: viewModel,
-                    onContinue: { advance(to: .final) },
-                    onSkip: { advance(to: .final) }
+                    onContinue: { advance(to: .experience) },
+                    onSkip: { advance(to: .experience) }
                 )
                 .tag(OnboardingPage.allergiesMeds)
 
-                FinalPage(
+                ExperienceLevelPage(
                     viewModel: viewModel,
-                    onTakeScan: {
-                        Task { await finishAndDismiss(viewModel: viewModel) }
-                    }
+                    onContinue: { advance(to: .valueProp) }
                 )
-                .tag(OnboardingPage.final)
+                .tag(OnboardingPage.experience)
+
+                ValuePropPage(
+                    onContinue: { advance(to: .account) }
+                )
+                .tag(OnboardingPage.valueProp)
+
+                AccountPage(
+                    viewModel: viewModel,
+                    onFinished: onFinished
+                )
+                .tag(OnboardingPage.account)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .indexViewStyle(.page(backgroundDisplayMode: .never))
@@ -82,20 +90,6 @@ public struct OnboardingPagerView: View {
             page = next
         }
     }
-
-    private func jumpToFinal() {
-        withAnimation(Theme.Motion.gentle) {
-            page = .final
-        }
-    }
-
-    private func finishAndDismiss(viewModel: OnboardingViewModel) async {
-        // Best-effort: persist the draft profile if the auth session exists.
-        // The pager itself doesn't gate finalization on a session — instance C1's
-        // navigation layer is responsible for sequencing auth before/after.
-        await viewModel.finalize()
-        onFinished()
-    }
 }
 
 /// Identifier for each pager page. Raw values index the dot-progress view.
@@ -103,7 +97,9 @@ enum OnboardingPage: Int, CaseIterable, Hashable {
     case welcome = 0
     case goals
     case allergiesMeds
-    case final
+    case experience
+    case valueProp
+    case account
 
     static var total: Int { allCases.count }
 }

@@ -53,9 +53,38 @@ public struct SupabaseAuthService: AuthService {
         return try await createProfile(userID: userID, email: email)
     }
 
+    public func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile {
+        let session = try await client.auth.signInWithIdToken(
+            credentials: .init(provider: .apple, idToken: idToken, nonce: nonce)
+        )
+        let userID = session.user.id.uuidString
+        if let existing = try await fetchProfile(userID: userID) {
+            return existing
+        }
+        return try await createProfile(userID: userID, email: session.user.email ?? "")
+    }
+
+    public func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile {
+        let session = try await client.auth.signInWithIdToken(
+            credentials: .init(provider: .google, idToken: idToken, accessToken: accessToken)
+        )
+        let userID = session.user.id.uuidString
+        if let existing = try await fetchProfile(userID: userID) {
+            return existing
+        }
+        return try await createProfile(userID: userID, email: session.user.email ?? "")
+    }
+
     public func completeOnboarding(userID: String) async throws {
         try await client.from("user_profiles")
             .update(["onboarding_completed": true])
+            .eq("id", value: userID)
+            .execute()
+    }
+
+    public func updateTier(userID: String, tier: SubscriptionTier) async throws {
+        try await client.from("user_profiles")
+            .update(["subscription_tier": tier.rawValue])
             .eq("id", value: userID)
             .execute()
     }

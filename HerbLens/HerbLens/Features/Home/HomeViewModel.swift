@@ -69,7 +69,8 @@ public final class HomeViewModel {
                     premiumCollections: premium,
                     recents: recents,
                     recentPlantsByID: lookup,
-                    tier: tier
+                    tier: tier,
+                    totalScanCount: allScans.count
                 )
             )
         } catch {

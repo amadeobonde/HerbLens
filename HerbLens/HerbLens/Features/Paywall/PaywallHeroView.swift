@@ -33,7 +33,7 @@ struct PaywallHeroView: View {
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Bamboo's full guidance — scans, recipes, expert chat.")
+                Text("Detailed insights, full recipes, and expert chat with Bamboo.")
                     .font(Theme.Font.callout)
                     .foregroundStyle(.white.opacity(0.92))
                     .shadow(color: Theme.Color.charcoal.opacity(0.4), radius: 4, x: 0, y: 1)

@@ -15,6 +15,11 @@ public extension Theme {
         public static let settings: String = "gearshape.fill"
         public static let paywall: String = "sparkles"
 
+        // FAB / identification
+        public static let camera: String = "camera.fill"
+        public static let barcode: String = "barcode.viewfinder"
+        public static let search: String = "magnifyingglass"
+
         // Content actions
         public static let favorite: String = "heart.fill"
         public static let favoriteOutline: String = "heart"

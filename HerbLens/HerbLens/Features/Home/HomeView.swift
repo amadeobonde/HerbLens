@@ -8,29 +8,14 @@ public struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var viewModel: HomeViewModel?
     @State private var path: [HomeRoute] = []
-    /// Total mascot rotation in degrees. Bumped by 360 on each pull-to-refresh so the
-    /// header Bamboo spins one full turn via `Theme.Motion.snappy`.
-    @State private var mascotRotation: Double = 0
+    @State private var didRefresh: Bool = false
 
-    /// Navigation closures so ContentView can drive tab switches when a Home button
-    /// is tapped. Plain `() -> Void` (not @Sendable) because both caller and callee
-    /// are @MainActor SwiftUI views — the @Sendable wrapping was silently dropping
-    /// the tab-switch mutation.
     public var onScanTap: (() -> Void) = {}
-    public var onRecipesTap: (() -> Void) = {}
-    public var onVaultTap: (() -> Void) = {}
-    public var onChatTap: (() -> Void) = {}
 
     public init(
-        onScanTap: @escaping () -> Void = {},
-        onRecipesTap: @escaping () -> Void = {},
-        onVaultTap: @escaping () -> Void = {},
-        onChatTap: @escaping () -> Void = {}
+        onScanTap: @escaping () -> Void = {}
     ) {
         self.onScanTap = onScanTap
-        self.onRecipesTap = onRecipesTap
-        self.onVaultTap = onVaultTap
-        self.onChatTap = onChatTap
     }
 
     public var body: some View {
@@ -112,30 +97,21 @@ public struct HomeView: View {
     private func loadedView(_ data: HomeData) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                HomeGreetingHeader(rotation: mascotRotation)
-                    .padding(.top, Theme.Spacing.xs)
+                HomeGreetingHeader(
+                    didRefresh: didRefresh,
+                    scanCount: data.totalScanCount,
+                    tier: data.tier
+                )
+                .padding(.top, Theme.Spacing.xs)
 
                 ScanCTAButton(action: onScanTap)
                     .padding(.horizontal, Theme.Spacing.md)
 
-                HomeQuickActionsRow(
-                    onScan: onScanTap,
-                    onRecipes: onRecipesTap,
-                    onVault: onVaultTap,
-                    onChat: onChatTap
-                )
-
                 if !data.featured.isEmpty {
-                    // Rotate daily so the "Featured today" strip feels fresh —
-                    // deterministic per UTC calendar day, no server call needed.
                     FeaturedPlantsCarousel(plants: DailyRotation.rotated(data.featured)) { plant in
                         path.append(.plant(id: plant.id))
                     }
                 }
-
-                MadeThisWeekRow(onBrowseRecipes: { @Sendable in
-                    // Recipes tab routing belongs to Instance 7. Placeholder closure for now.
-                })
 
                 RecentlyScannedRow(
                     recents: data.recents,
@@ -166,9 +142,7 @@ public struct HomeView: View {
             }
         }
         .refreshable {
-            withAnimation(Theme.Motion.snappy) {
-                mascotRotation += 360
-            }
+            didRefresh.toggle()
             await viewModel?.refresh()
         }
     }

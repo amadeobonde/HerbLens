@@ -50,7 +50,7 @@ struct ScanResultView: View {
         ZStack(alignment: .bottom) {
             HeroPhoto(uiImage: result.image, height: 320)
 
-            MascotBadge(.celebrating, size: 160)
+            MascotBadge(.celebrating, size: 160, behavior: .celebrating)
                 .offset(y: 40)
                 .shadow(Theme.Shadow.float)
         }

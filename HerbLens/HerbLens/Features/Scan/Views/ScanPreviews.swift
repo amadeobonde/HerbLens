@@ -9,19 +9,19 @@ private enum PreviewHelpers {
 }
 
 #Preview("Idle — free user") {
-    ScanIdleView(tier: .free, remaining: 3) { _ in }
+    ScanIdleView(tier: .free) { _ in }
 }
 
 #Preview("Idle — premium") {
-    ScanIdleView(tier: .premium, remaining: nil) { _ in }
+    ScanIdleView(tier: .premium) { _ in }
 }
 
-#Preview("Remaining chip — free / 2 left") {
-    ScanRemainingChip(tier: .free, remaining: 2).padding()
+#Preview("Remaining chip — free") {
+    ScanRemainingChip(tier: .free).padding()
 }
 
 #Preview("Remaining chip — premium") {
-    ScanRemainingChip(tier: .premium, remaining: nil).padding()
+    ScanRemainingChip(tier: .premium).padding()
 }
 
 #Preview("Result — high confidence") {
@@ -57,10 +57,6 @@ private enum PreviewHelpers {
         onPickCandidate: { _ in },
         onOpenVault: nil
     )
-}
-
-#Preview("Quota reached") {
-    QuotaReachedView(limit: 3, onPaywall: {}, onDismiss: {})
 }
 
 #Preview("Loading") {

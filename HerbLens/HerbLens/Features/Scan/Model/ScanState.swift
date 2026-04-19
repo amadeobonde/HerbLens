@@ -5,12 +5,11 @@ import UIKit
 /// stay unrepresentable.
 @MainActor
 public enum ScanState: Equatable {
-    case idle(remaining: Int?)
+    case idle
     case permissionDenied(PermissionSource)
     case capturing
     case identifying(UIImage)
     case result(ScanResult)
-    case quotaExceeded(limit: Int)
     case failed(ScanDisplayError)
 
     public var isIdle: Bool {
@@ -20,8 +19,8 @@ public enum ScanState: Equatable {
 
     public static func == (lhs: ScanState, rhs: ScanState) -> Bool {
         switch (lhs, rhs) {
-        case let (.idle(a), .idle(b)):
-            return a == b
+        case (.idle, .idle):
+            return true
         case let (.permissionDenied(a), .permissionDenied(b)):
             return a == b
         case (.capturing, .capturing):
@@ -29,8 +28,6 @@ public enum ScanState: Equatable {
         case let (.identifying(a), .identifying(b)):
             return a === b
         case let (.result(a), .result(b)):
-            return a == b
-        case let (.quotaExceeded(a), .quotaExceeded(b)):
             return a == b
         case let (.failed(a), .failed(b)):
             return a == b

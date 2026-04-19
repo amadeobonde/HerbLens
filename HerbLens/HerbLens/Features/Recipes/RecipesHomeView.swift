@@ -104,7 +104,7 @@ struct RecipesHomeView: View {
 
     private var header: some View {
         VStack(spacing: Theme.Spacing.xs) {
-            MascotBadge(.brewing, size: 120)
+            MascotBadge(.brewing, size: 120, behavior: .sipping)
             Text("Brew, sip, learn")
                 .font(Theme.Font.display)
                 .foregroundStyle(Theme.Color.textPrimary)
@@ -120,7 +120,7 @@ struct RecipesHomeView: View {
     /// Bamboo + copy invites the user to loop back up.
     private var recipesFooter: some View {
         VStack(spacing: Theme.Spacing.xs) {
-            MascotBadge(.celebrating, size: 88)
+            MascotBadge(.celebrating, size: 88, behavior: .celebrating)
             Text("That's today's shelf.")
                 .font(Theme.Font.callout)
                 .foregroundStyle(Theme.Color.textSecondary)

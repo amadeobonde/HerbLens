@@ -29,8 +29,8 @@ public struct ScanView: View {
     @ViewBuilder
     private func content(for vm: ScanViewModel) -> some View {
         switch vm.state {
-        case .idle(let remaining):
-            ScanIdleView(tier: vm.tier, remaining: remaining) { image in
+        case .idle:
+            ScanIdleView(tier: vm.tier) { image in
                 Task { await vm.submit(image: image) }
             }
         case .capturing:
@@ -48,16 +48,10 @@ public struct ScanView: View {
                 onPickCandidate: { vm.pickCandidate($0) },
                 onOpenVault: onOpenVault
             )
-        case .quotaExceeded(let limit):
-            QuotaReachedView(
-                limit: limit,
-                onPaywall: onPaywall,
-                onDismiss: { vm.reset() }
-            )
         case .failed(let error):
             ScanErrorView(error: error, onDismiss: { vm.dismissError() })
         case .permissionDenied:
-            ScanIdleView(tier: vm.tier, remaining: nil) { image in
+            ScanIdleView(tier: vm.tier) { image in
                 Task { await vm.submit(image: image) }
             }
         }

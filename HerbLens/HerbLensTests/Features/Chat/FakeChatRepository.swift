@@ -92,4 +92,8 @@ struct StubAuth: AuthService {
     }
     func signOut() async throws {}
     func sendMagicLink(email: String) async throws {}
+    func verifyEmailOTP(email: String, token: String) async throws -> UserProfile { throw CancellationError() }
+    func signInWithApple(idToken: String, nonce: String) async throws -> UserProfile { throw CancellationError() }
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> UserProfile { throw CancellationError() }
+    func completeOnboarding(userID: String) async throws {}
 }

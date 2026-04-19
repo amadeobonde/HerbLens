@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 final class OnboardingViewModel {
     // Services — held as `any Protocol` so previews/tests can inject mocks or spies.
-    private let auth: any AuthService
+    let auth: any AuthService
     private let healthProfileRepo: any HealthProfileRepository
     private let subscriptions: any SubscriptionService
 

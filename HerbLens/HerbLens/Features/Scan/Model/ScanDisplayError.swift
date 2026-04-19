@@ -15,16 +15,6 @@ public struct ScanDisplayError: Equatable, Sendable, Identifiable {
     }
 
     public static func from(_ error: Error) -> ScanDisplayError {
-        if let scanError = error as? ScanError {
-            switch scanError {
-            case .quotaExceeded(let limit):
-                return ScanDisplayError(
-                    title: "Daily scan limit reached",
-                    message: "You've used all \(limit) of today's free scans. Go Premium for unlimited scans, or come back tomorrow.",
-                    retriable: false
-                )
-            }
-        }
         if let serviceError = error as? ServiceError {
             switch serviceError {
             case .unauthenticated:

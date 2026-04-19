@@ -7,6 +7,8 @@ struct FinalPage: View {
     @Bindable var viewModel: OnboardingViewModel
     let onTakeScan: @Sendable () -> Void
 
+    @State private var behavior: MascotBehavior = .waving
+
     var body: some View {
         ZStack {
             Theme.Color.background.ignoresSafeArea()
@@ -14,7 +16,7 @@ struct FinalPage: View {
             VStack(spacing: Theme.Spacing.lg) {
                 Spacer()
 
-                MascotBadge(.celebrating, size: 180)
+                MascotBadge(.celebrating, size: 180, behavior: behavior)
 
                 VStack(spacing: Theme.Spacing.xs) {
                     Text("You're all set!")
@@ -35,6 +37,10 @@ struct FinalPage: View {
                     .padding(.horizontal, Theme.Spacing.lg)
                     .padding(.bottom, 80) // clear progress dots
             }
+        }
+        .task {
+            try? await Task.sleep(for: .seconds(1.5))
+            behavior = .celebrating
         }
     }
 

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Error view for the Scan flow. Uses the sleeping mascot as a soft fallback (no
-/// dedicated `confused` asset exists yet) and routes the user back via the same
-/// dismiss closure regardless of retriability.
+/// Error view for the Scan flow. Uses the confused mascot to signal something went
+/// wrong, and routes the user back via the same dismiss closure regardless of
+/// retriability.
 struct ScanErrorView: View {
     let error: ScanDisplayError
     let onDismiss: @Sendable () -> Void
@@ -13,7 +13,7 @@ struct ScanErrorView: View {
 
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
-                    MascotBadge(.sleeping, size: 160)
+                    MascotBadge(.confused, size: 160)
                         .padding(.top, Theme.Spacing.xl)
 
                     GlassCard {

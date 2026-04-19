@@ -7,7 +7,6 @@ import SwiftUI
 /// sticky strip with a `PrimaryButton` shutter and a glass-capsule library picker.
 struct ScanIdleView: View {
     let tier: SubscriptionTier
-    let remaining: Int?
     let onCapture: (UIImage) -> Void
 
     @State private var cameraController = CameraCaptureController()
@@ -45,18 +44,15 @@ struct ScanIdleView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Scan a plant")
-                    .font(Theme.Font.title)
-                    .foregroundStyle(Theme.Color.textPrimary)
-                Text("Frame a single leaf or bloom for the best match.")
-                    .font(Theme.Font.caption)
-                    .foregroundStyle(Theme.Color.textSecondary)
-            }
-            Spacer()
-            ScanRemainingChip(tier: tier, remaining: remaining)
+        VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+            Text("Scan a plant")
+                .font(Theme.Font.title)
+                .foregroundStyle(Theme.Color.textPrimary)
+            Text("Frame a single leaf or bloom for the best match.")
+                .font(Theme.Font.caption)
+                .foregroundStyle(Theme.Color.textSecondary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Viewfinder card
@@ -114,8 +110,10 @@ struct ScanIdleView: View {
                 .blur(radius: 4)
                 .overlay(Theme.Color.background.opacity(0.08))
 
-            VStack(spacing: Theme.Spacing.xs) {
-                MascotBadge(.scanning, size: 170)
+            VStack(spacing: Theme.Spacing.md) {
+                Spacer()
+
+                MascotBadge(.scanning, size: 96, behavior: .lookAround)
 
                 Text("Point at any plant")
                     .font(Theme.Font.headline)
@@ -125,6 +123,8 @@ struct ScanIdleView: View {
                     .background(
                         Capsule().fill(Theme.Color.background.opacity(0.85))
                     )
+
+                Spacer()
             }
         }
     }

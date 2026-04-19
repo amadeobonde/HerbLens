@@ -32,17 +32,6 @@ struct MockServicesTests {
         #expect(byTag.contains(where: { $0.commonName == "Lavender" }))
     }
 
-    @Test("ScansOverQuota throws typed error immediately")
-    func overQuotaThrows() async throws {
-        let repo = MockServices.ScansOverQuota()
-        do {
-            _ = try await repo.identify(imageData: Data())
-            Issue.record("expected ScanError.quotaExceeded")
-        } catch let error as ScanError {
-            #expect(error == .quotaExceeded(limit: 3))
-        }
-    }
-
     @Test("toggleFavorite flips the stored value")
     func toggleFavorite() async throws {
         let repo = await MockServices.Scans()

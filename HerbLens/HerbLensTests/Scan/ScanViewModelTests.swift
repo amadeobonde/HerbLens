@@ -3,9 +3,8 @@ import Testing
 import UIKit
 @testable import HerbLens
 
-/// Behavior tests for the Scan view-model. Exercises the happy path (high-confidence),
-/// the low-confidence branch (chips required to pick a candidate), and the paywall
-/// trigger (`ScanError.quotaExceeded` from the repository). No network, no camera.
+/// Behavior tests for the Scan view-model. Exercises the happy path (high-confidence)
+/// and the low-confidence branch (chips required to pick a candidate). No network, no camera.
 @Suite("ScanViewModel")
 @MainActor
 struct ScanViewModelTests {
@@ -62,26 +61,6 @@ struct ScanViewModelTests {
         #expect(updated.selectedPlant?.id == SampleData.peppermint.id)
     }
 
-    @Test("quota-exceeded transitions to paywall state and never calls plants")
-    func quotaExceededTriggersPaywallState() async {
-        let overQuota = MockServices.ScansOverQuota()
-        let plants = CountingPlants()
-        let vm = ScanViewModel(
-            scans: overQuota,
-            plants: plants,
-            subscriptions: FreeSubscriptions(),
-            imageProcessor: PassthroughProcessor(),
-            userID: SampleData.userID
-        )
-        await vm.submit(image: Self.onePixel)
-        guard case .quotaExceeded(let limit) = vm.state else {
-            Issue.record("expected .quotaExceeded, got \(vm.state)")
-            return
-        }
-        #expect(limit == 3)
-        #expect(plants.searchCount == 0)
-    }
-
     @Test("save constructs a Scan echoing the selected plant + confidence")
     func saveEchoesSelection() async {
         let vm = ScanViewModel(
@@ -96,13 +75,11 @@ struct ScanViewModelTests {
         #expect(saved != nil)
         #expect(saved?.identifiedPlantId == SampleData.chamomile.id)
         #expect(saved?.confidenceScore == 0.94)
-        if case .idle = vm.state {} else {
-            Issue.record("expected .idle after save; got \(vm.state)")
-        }
+        #expect(vm.state == .idle)
     }
 
-    @Test("free-tier remaining chip counts down after each successful scan")
-    func remainingCountsDown() async {
+    @Test("onAppear sets idle state")
+    func onAppearSetsIdle() async {
         let vm = ScanViewModel(
             scans: StubScans(result: .highConfidence),
             plants: MockServices.Plants(),
@@ -111,18 +88,8 @@ struct ScanViewModelTests {
             userID: SampleData.userID
         )
         await vm.onAppear()
-        if case .idle(let remaining) = vm.state {
-            #expect(remaining == 3)
-        } else {
-            Issue.record("expected .idle after onAppear")
-        }
-        await vm.submit(image: Self.onePixel)
-        _ = await vm.save()
-        if case .idle(let remaining) = vm.state {
-            #expect(remaining == 2)
-        } else {
-            Issue.record("expected .idle after save")
-        }
+        #expect(vm.state == .idle)
+        #expect(vm.tier == .free)
     }
 }
 
@@ -164,28 +131,6 @@ private nonisolated struct StubScans: ScansRepository {
     func list(userID: String, sort: ScanSort, filter: ScanFilter) async throws -> [Scan] { [] }
     func toggleFavorite(scanID: String) async throws {}
     func delete(scanID: String) async throws {}
-}
-
-private final class CountingPlants: PlantsRepository, @unchecked Sendable {
-    private let lock = NSLock()
-    private var _searchCount = 0
-    var searchCount: Int {
-        lock.lock(); defer { lock.unlock() }
-        return _searchCount
-    }
-
-    nonisolated init() {}
-
-    func featured() async throws -> [Plant] { [] }
-    func plant(id: String) async throws -> Plant { SampleData.chamomile }
-    func search(query: String) async throws -> [Plant] {
-        lock.lock(); _searchCount += 1; lock.unlock()
-        return []
-    }
-    func healthScore(for plantID: String, userID: String) async throws -> HealthScore {
-        SampleData.chamomile.healthScore
-    }
-    func highlightCollections() async throws -> [HighlightCollection] { [] }
 }
 
 private nonisolated struct FreeSubscriptions: SubscriptionService {

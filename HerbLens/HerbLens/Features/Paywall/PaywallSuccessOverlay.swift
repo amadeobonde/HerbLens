@@ -9,7 +9,6 @@ import UIKit
 struct PaywallSuccessOverlay: View {
     let onComplete: () -> Void
 
-    @State private var scale: CGFloat = 0.6
     @State private var opacity: Double = 0.0
 
     var body: some View {
@@ -19,8 +18,7 @@ struct PaywallSuccessOverlay: View {
                 .opacity(opacity * 0.92)
 
             VStack(spacing: Theme.Spacing.md) {
-                MascotBadge(.celebrating, size: 220)
-                    .scaleEffect(scale)
+                MascotBadge(.celebrating, size: 220, behavior: .celebrating)
                     .opacity(opacity)
 
                 VStack(spacing: Theme.Spacing.xxs) {
@@ -37,7 +35,6 @@ struct PaywallSuccessOverlay: View {
         .onAppear {
             triggerHaptic()
             withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
-                scale = 1.0
                 opacity = 1.0
             }
             Task {
