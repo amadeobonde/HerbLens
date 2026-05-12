@@ -80,7 +80,7 @@ struct AllergiesMedicationsPage: View {
                     onContinue()
                 })
                 .padding(.horizontal, Theme.Spacing.lg)
-                .padding(.bottom, 64) // clear progress dots
+                .padding(.bottom, 72) // clear progress dots
             }
 
             Button(action: {

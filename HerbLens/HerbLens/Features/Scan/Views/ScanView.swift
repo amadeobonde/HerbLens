@@ -44,12 +44,12 @@ public struct ScanView: View {
                 onSave: {
                     Task { _ = await vm.save() }
                 },
-                onScanAnother: { vm.reset() },
-                onPickCandidate: { vm.pickCandidate($0) },
+                onScanAnother: { Task { @MainActor in vm.reset() } },
+                onPickCandidate: { candidate in Task { @MainActor in vm.pickCandidate(candidate) } },
                 onOpenVault: onOpenVault
             )
         case .failed(let error):
-            ScanErrorView(error: error, onDismiss: { vm.dismissError() })
+            ScanErrorView(error: error, onDismiss: { Task { @MainActor in vm.dismissError() } })
         case .permissionDenied:
             ScanIdleView(tier: vm.tier) { image in
                 Task { await vm.submit(image: image) }

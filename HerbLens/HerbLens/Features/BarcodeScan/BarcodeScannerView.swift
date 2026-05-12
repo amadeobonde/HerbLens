@@ -12,8 +12,12 @@ struct BarcodeScannerView: View {
         case scanning
         case lookingUp(String)
         case notFound(String)
+        case found(PackagedProduct)
         case unsupported
     }
+    
+    // Injected service specifically for external catalog resolution
+    private let barcodeService: any BarcodeService = OpenFoodFactsService()
 
     var body: some View {
         NavigationStack {
@@ -103,6 +107,54 @@ struct BarcodeScannerView: View {
 
                 Spacer()
             }
+            
+        case .found(let product):
+            VStack(spacing: Theme.Spacing.md) {
+                Spacer()
+                
+                if let urlString = product.imageUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { image in
+                        image.resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
+                    } placeholder: {
+                        ProgressView().frame(height: 200)
+                    }
+                } else {
+                    Image(systemName: "shippingbox.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(Theme.Color.sage.opacity(0.5))
+                        .frame(height: 200)
+                }
+                
+                Text(product.name)
+                    .font(Theme.Font.headline)
+                    .foregroundStyle(Theme.Color.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                
+                if let brand = product.brand {
+                    Text(brand)
+                        .font(Theme.Font.callout)
+                        .foregroundStyle(Theme.Color.textSecondary)
+                }
+
+                Button {
+                    lookupState = .scanning
+                } label: {
+                    Text("Scan another")
+                        .font(Theme.Font.callout.weight(.semibold))
+                        .foregroundStyle(Theme.Color.bone)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                        .padding(.vertical, Theme.Spacing.sm)
+                        .background(Theme.Color.sage)
+                        .clipShape(Capsule())
+                }
+                .padding(.top, Theme.Spacing.sm)
+
+                Spacer()
+            }
 
         case .unsupported:
             unsupportedContent
@@ -129,6 +181,13 @@ struct BarcodeScannerView: View {
 
     private func lookupBarcode(_ code: String) async {
         do {
+            // First check Open Food Facts catalog
+            if let product = try await barcodeService.lookup(barcode: code) {
+                lookupState = .found(product)
+                return
+            }
+            
+            // Fallback to local plants repository search by code if applicable
             let results = try await dependencies.plants.search(query: code)
             if results.isEmpty {
                 lookupState = .notFound(code)

@@ -77,20 +77,17 @@ struct ScanResultView: View {
                     RingMetric(
                         value: clampedConfidence,
                         label: "Match",
-                        color: confidenceColor,
-                        size: 84
+                        color: confidenceColor
                     )
                     RingMetric(
                         value: healthScoreValue,
                         label: "Health",
-                        color: Theme.Color.sage,
-                        size: 84
+                        color: Theme.Color.sage
                     )
                     RingMetric(
                         value: goalsValue,
                         label: "Goals",
-                        color: Theme.Color.amber,
-                        size: 84
+                        color: Theme.Color.amber
                     )
                 }
                 .frame(maxWidth: .infinity, alignment: .center)

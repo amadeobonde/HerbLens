@@ -75,10 +75,10 @@ final class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate,
 
     nonisolated func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         MainActor.assumeIsolated {
-            UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .flatMap(\.windows)
-                .first(where: \.isKeyWindow) ?? UIWindow()
+            let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            return scenes.flatMap(\.windows).first(where: \.isKeyWindow)
+                ?? scenes.first.map(UIWindow.init(windowScene:))
+                ?? UIWindow()
         }
     }
 

@@ -8,20 +8,17 @@ public struct RingMetric: View {
     private nonisolated let total: Double
     private nonisolated let label: String
     private nonisolated let color: Color
-    private nonisolated let size: CGFloat
 
     public nonisolated init(
         value: Double,
         total: Double = 1.0,
         label: String,
-        color: Color,
-        size: CGFloat = 84
+        color: Color
     ) {
         self.value = value
         self.total = total
         self.label = label
         self.color = color
-        self.size = size
     }
 
     private var fraction: Double {
@@ -29,31 +26,39 @@ public struct RingMetric: View {
         return min(max(value / total, 0), 1)
     }
 
-    private var strokeWidth: CGFloat { size / 10 }
-
     public var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Theme.Color.bone.opacity(0.6), lineWidth: strokeWidth)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                GeometryReader { geo in
+                    let dim = min(geo.size.width, geo.size.height)
+                    let strokeWidth = max(2, dim / 10)
 
-            Circle()
-                .trim(from: 0, to: fraction)
-                .stroke(color, style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(Theme.Motion.gentle, value: fraction)
+                    ZStack {
+                        Circle()
+                            .stroke(Theme.Color.bone.opacity(0.6), lineWidth: strokeWidth)
 
-            VStack(spacing: 2) {
-                Text("\(Int((fraction * 100).rounded()))%")
-                    .font(.system(size: size * 0.28, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.Color.textPrimary)
-                Text(label)
-                    .font(.system(size: size * 0.13, weight: .medium, design: .default))
-                    .foregroundStyle(Theme.Color.textSecondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                        Circle()
+                            .trim(from: 0, to: fraction)
+                            .stroke(color, style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .animation(Theme.Motion.gentle, value: fraction)
+
+                        VStack(spacing: 2) {
+                            Text("\(Int((fraction * 100).rounded()))%")
+                                .font(.system(size: max(10, dim * 0.28), weight: .bold, design: .rounded))
+                                .foregroundStyle(Theme.Color.textPrimary)
+                            Text(label)
+                                .font(.system(size: max(8, dim * 0.13), weight: .medium, design: .default))
+                                .foregroundStyle(Theme.Color.textSecondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                    }
+                    .frame(width: dim, height: dim)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                }
             }
-        }
-        .frame(width: size, height: size)
     }
 }
 

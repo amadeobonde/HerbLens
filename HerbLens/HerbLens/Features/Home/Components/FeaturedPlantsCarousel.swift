@@ -10,7 +10,7 @@ struct FeaturedPlantsCarousel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            SectionHeader("Featured today")
+            SectionHeader("Featured this week")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.md) {

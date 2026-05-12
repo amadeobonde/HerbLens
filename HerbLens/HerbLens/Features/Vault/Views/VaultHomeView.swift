@@ -26,9 +26,9 @@ public struct VaultHomeView: View {
     private let herbs: [VaultItem]
     private let brews: [VaultItem]
     private let plantsByID: [String: Plant]
-    private let onSelect: (VaultItem) -> Void
-    private let onScanCTA: () -> Void
-    private let onBrewCTA: () -> Void
+    private let onSelect: @Sendable (VaultItem) -> Void
+    private let onScanCTA: @Sendable () -> Void
+    private let onBrewCTA: @Sendable () -> Void
 
     @State private var section: Section = .herbs
     @State private var herbsChip: VaultFilterChips.Chip = .recent
@@ -38,9 +38,9 @@ public struct VaultHomeView: View {
         herbs: [VaultItem],
         brews: [VaultItem],
         plantsByID: [String: Plant] = [:],
-        onSelect: @escaping (VaultItem) -> Void = { _ in },
-        onScanCTA: @escaping () -> Void = {},
-        onBrewCTA: @escaping () -> Void = {}
+        onSelect: @escaping @Sendable (VaultItem) -> Void = { _ in },
+        onScanCTA: @escaping @Sendable () -> Void = {},
+        onBrewCTA: @escaping @Sendable () -> Void = {}
     ) {
         self.herbs = herbs
         self.brews = brews

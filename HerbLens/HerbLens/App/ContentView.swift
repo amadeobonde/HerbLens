@@ -26,7 +26,7 @@ struct ContentView: View {
     enum AppTab: Hashable { case home, recipes, vault, profile }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             TabView(selection: $selection) {
                 Tab("Home", systemImage: Theme.Icon.home, value: AppTab.home) {
                     HomeView(
@@ -43,7 +43,7 @@ struct ContentView: View {
                 }
 
                 Tab("Profile", systemImage: Theme.Icon.profile, value: AppTab.profile) {
-                    ProfileTabPlaceholder(
+                    ProfileView(
                         displayName: userDisplayName,
                         tier: tier,
                         showPaywall: triggerPaywallStub
@@ -161,78 +161,7 @@ private struct VaultTabPlaceholder: View {
     }
 }
 
-private struct ProfileTabPlaceholder: View {
-    let displayName: String
-    let tier: SubscriptionTier
-    let showPaywall: () -> Void
 
-    var body: some View {
-        VStack(spacing: Theme.Spacing.lg) {
-            VStack(spacing: Theme.Spacing.xs) {
-                Text(displayName)
-                    .font(Theme.Font.display)
-                    .foregroundStyle(Theme.Color.textPrimary)
-
-                TierChipStub(tier: tier)
-            }
-            .padding(.top, Theme.Spacing.xl)
-
-            EmptyStateView(
-                mascot: .sleeping,
-                title: "Profile coming soon",
-                subtitle: "Lands when feat/paywall-settings merges.",
-                ctaTitle: nil,
-                action: nil
-            )
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Color.background.ignoresSafeArea())
-    }
-}
-
-/// Lightweight tier badge — replaced by the real chip from `feat/paywall-settings`
-/// once that branch merges.
-private struct TierChipStub: View {
-    let tier: SubscriptionTier
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.xxs) {
-            Image(systemName: Theme.Icon.paywall)
-                .font(.caption)
-            Text(label)
-                .font(Theme.Font.caption.weight(.semibold))
-                .textCase(.uppercase)
-        }
-        .padding(.vertical, Theme.Spacing.xxs)
-        .padding(.horizontal, Theme.Spacing.sm)
-        .foregroundStyle(foreground)
-        .background(
-            Capsule()
-                .fill(background)
-        )
-    }
-
-    private var label: String {
-        switch tier {
-        case .free: return "Free"
-        case .premium: return "Pro"
-        }
-    }
-
-    private var foreground: SwiftUI.Color {
-        switch tier {
-        case .free: return Theme.Color.textSecondary
-        case .premium: return Theme.Color.bone
-        }
-    }
-
-    private var background: SwiftUI.Color {
-        switch tier {
-        case .free: return Theme.Color.sage.opacity(0.15)
-        case .premium: return Theme.Color.amber
-        }
-    }
-}
 
 #Preview("Tabs") {
     ContentView()

@@ -18,9 +18,9 @@ struct RecipeTimerView: View {
                     value: Double(model.totalSeconds - model.remainingSeconds),
                     total: Double(model.totalSeconds),
                     label: model.formatted,
-                    color: model.state == .completed ? Theme.Color.sage : Theme.Color.forest,
-                    size: 140
+                    color: model.state == .completed ? Theme.Color.sage : Theme.Color.forest
                 )
+                .frame(width: 140, height: 140)
 
                 Text(label)
                     .font(Theme.Font.caption)

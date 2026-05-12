@@ -7,6 +7,7 @@ struct CuratedForYouSection: View {
     let collections: [HighlightCollection]
     let plantsByID: [String: Plant]
     let onSelect: (Plant) -> Void
+    let onSelectCollection: (HighlightCollection) -> Void
 
     var body: some View {
         if !collections.isEmpty {
@@ -28,7 +29,8 @@ struct CuratedForYouSection: View {
                     HomeHighlightCollectionRow(
                         collection: collection,
                         plants: plants(for: collection),
-                        onSelect: onSelect
+                        onSelect: onSelect,
+                        onSelectCollection: onSelectCollection
                     )
                 }
             }

@@ -49,7 +49,7 @@ struct ExperienceLevelPage: View {
                 Spacer()
                 PrimaryButton("Continue", action: onContinue)
                     .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.bottom, 64)
+                    .padding(.bottom, 72)
             }
         }
     }

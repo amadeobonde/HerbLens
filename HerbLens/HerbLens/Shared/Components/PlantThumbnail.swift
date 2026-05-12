@@ -22,9 +22,14 @@ public struct PlantThumbnail: View {
 
     public var body: some View {
         Group {
-            if let webURL = PlantWebImages.url(for: plant.commonName) {
-                // Prefer real web photography — the app feels like an herb guide,
-                // not a sticker book. `AsyncImage` caches per URL.
+            if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
+                Image(local)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+            } else if let webURL = PlantWebImages.url(for: plant.commonName) {
+                // Prefer real web photography when no local high-quality asset exists.
                 AsyncImage(url: webURL) { phase in
                     switch phase {
                     case .empty:
@@ -37,12 +42,6 @@ public struct PlantThumbnail: View {
                         placeholder
                     }
                 }
-            } else if let local = Self.localAssetName(for: plant), hasAsset(named: local) {
-                Image(local)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .clipped()
             } else if let url = URL(string: plant.imageUrl), !plant.imageUrl.isEmpty {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -100,8 +99,9 @@ public struct PlantThumbnail: View {
     /// so tests can pin expected names.
     public nonisolated static func localAssetName(for plant: Plant) -> String? {
         switch plant.commonName.lowercased() {
-        case "chamomile":  return "Recipes/TeaCardChamomile"
-        case "peppermint": return "Recipes/TeaCardPeppermint"
+        case "chamomile":  return "herb_chamomile"
+        case "peppermint": return "herb_peppermint"
+        case "elderberry": return "herb_elderberry"
         case "ginger":     return "Recipes/TeaCardGinger"
         case "lavender":   return "Recipes/TeaCardLavender"
         case "echinacea":  return "Recipes/TeaCardEchinacea"

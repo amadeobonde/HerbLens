@@ -59,7 +59,7 @@ struct ValuePropPage: View {
                 Spacer()
                 PrimaryButton("Almost there", action: onContinue)
                     .padding(.horizontal, Theme.Spacing.lg)
-                    .padding(.bottom, 64)
+                    .padding(.bottom, 72)
             }
         }
     }

@@ -17,22 +17,23 @@ nonisolated enum RecipeImageLookup {
     private static let teaSlugs: [(match: String, slug: String)] = [
         ("chamomile", "TeaCardChamomile"),
         ("peppermint", "TeaCardPeppermint"),
-        // Nearby-herb fallbacks — warm chamomile art for golden/root/citrus teas,
-        // peppermint for cool/green ones. Replace with dedicated imagesets as they ship.
-        ("ginger", "TeaCardChamomile"),
-        ("lemon balm", "TeaCardPeppermint"),
+        ("ginger", "tea_ginger"),
+        ("lemon balm", "tea_lemon_balm"),
         ("rosemary", "TeaCardPeppermint"),
-        ("lavender", "TeaCardChamomile"),
+        ("lavender", "tea_lavender"),
         ("hibiscus", "TeaCardChamomile"),
-        ("echinacea", "TeaCardChamomile"),
-        ("dandelion", "TeaCardChamomile"),
-        ("elderberry", "TeaCardChamomile"),
+        ("echinacea", "tea_echinacea"),
+        ("dandelion", "tea_dandelion"),
+        ("elderberry", "tincture_elderberry"),
+        ("rooibos", "tea_rooibos"),
     ]
 
     private static let tinctureSlugs: [(match: String, slug: String)] = [
-        // All tinctures use the warm chamomile hero until tincture-prep art ships.
+        ("valerian", "tincture_valerian"),
+        ("milk thistle", "tincture_milk_thistle"),
+        ("elderberry", "tincture_elderberry"),
+        ("echinacea", "tea_echinacea"),
         ("chamomile", "TeaCardChamomile"),
-        ("elderberry", "TeaCardChamomile"),
     ]
 
     /// Returns the bare asset slug (e.g. `TeaCardChamomile`) or `nil`. Callers

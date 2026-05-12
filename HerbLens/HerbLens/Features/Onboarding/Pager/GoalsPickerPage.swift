@@ -28,7 +28,7 @@ struct GoalsPickerPage: View {
                 VStack(spacing: Theme.Spacing.lg) {
                     VStack(spacing: Theme.Spacing.sm) {
                         MascotBadge(.teacher, size: 140)
-                            .padding(.top, Theme.Spacing.lg)
+                            .padding(.top, Theme.Spacing.xl)
 
                         VStack(spacing: Theme.Spacing.xs) {
                             Text("What are you brewing toward?")
@@ -65,7 +65,7 @@ struct GoalsPickerPage: View {
                     action: onContinue
                 )
                 .padding(.horizontal, Theme.Spacing.lg)
-                .padding(.bottom, 64) // clear progress dots
+                .padding(.bottom, 72) // clear progress dots
             }
         }
     }

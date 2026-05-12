@@ -34,24 +34,34 @@ public struct MascotBadge: View {
     }
 
     public var body: some View {
-        ZStack {
-            halo
-            animatedMascot
-        }
-        .scaleEffect(didAppear ? 1.0 : 0.7)
-        .opacity(didAppear ? 1.0 : 0.0)
-        .animation(Theme.Motion.bounce, value: didAppear)
-        .onAppear { didAppear = true }
-        .onTapGesture {
-            guard size >= 64, !reduceMotion else { return }
-            tapped.toggle()
-        }
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .frame(maxWidth: size, maxHeight: size)
+            .overlay {
+                GeometryReader { geo in
+                    let dim = min(geo.size.width, geo.size.height)
+                    ZStack {
+                        halo(dim: dim)
+                        animatedMascot(dim: dim)
+                    }
+                    .frame(width: dim, height: dim)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                }
+            }
+            .scaleEffect(didAppear ? 1.0 : 0.7)
+            .opacity(didAppear ? 1.0 : 0.0)
+            .animation(Theme.Motion.bounce, value: didAppear)
+            .onAppear { didAppear = true }
+            .onTapGesture {
+                guard size >= 64, !reduceMotion else { return }
+                tapped.toggle()
+            }
     }
 
     // MARK: - Halo
 
     @ViewBuilder
-    private var halo: some View {
+    private func halo(dim: CGFloat) -> some View {
         Circle()
             .fill(
                 RadialGradient(
@@ -61,24 +71,24 @@ public struct MascotBadge: View {
                     ],
                     center: .center,
                     startRadius: 0,
-                    endRadius: size * 0.55
+                    endRadius: dim * 0.55
                 )
             )
-            .frame(width: size * 1.25, height: size * 1.25)
+            .frame(width: dim * 1.25, height: dim * 1.25)
     }
 
     // MARK: - Animated mascot image
 
     @ViewBuilder
-    private var animatedMascot: some View {
+    private func animatedMascot(dim: CGFloat) -> some View {
         let base = Image(variant.rawValue)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: size, height: size)
+            .frame(width: dim, height: dim)
 
         if reduceMotion || !breathes {
             base.rotationEffect(.degrees(restingRotation))
-        } else if size < 40 {
+        } else if dim < 40 {
             base
                 .modifier(BreathingOnly())
                 .rotationEffect(.degrees(restingRotation))

@@ -13,7 +13,7 @@ struct FABOverlay: View {
     @Binding var activeFlow: FABFlow?
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             if isExpanded {
                 Theme.Color.charcoal.opacity(0.4)
                     .ignoresSafeArea()
@@ -23,7 +23,7 @@ struct FABOverlay: View {
                     .accessibilityAddTraits(.isButton)
             }
 
-            VStack(spacing: Theme.Spacing.md) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.md) {
                 if isExpanded {
                     FABActionPanel(
                         onPhotoScan: { selectFlow(.photoScan) },
@@ -39,7 +39,8 @@ struct FABOverlay: View {
                     }
                 }
             }
-            .padding(.bottom, Theme.Spacing.xl + 48)
+            .padding(.bottom, Theme.Spacing.xl + 64)
+            .padding(.trailing, Theme.Spacing.lg)
         }
         .animation(Theme.Motion.bounce, value: isExpanded)
     }

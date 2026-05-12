@@ -6,8 +6,8 @@ import SwiftUI
 /// routing is injected via closures so this feature owns no cross-cutting nav.
 struct HerbProfileView: View {
     let plantID: String
-    let onAskAboutPlant: (String) -> Void
-    let onRequestPaywall: () -> Void
+    let onAskAboutPlant: @Sendable (String) -> Void
+    let onRequestPaywall: @Sendable () -> Void
 
     @Environment(\.dependencies) private var dependencies
     @State private var viewModel: HerbProfileViewModel?
@@ -60,8 +60,8 @@ struct HerbProfileView: View {
 private struct LoadedBody: View {
     let payload: HerbProfilePayload
     let heroHeight: CGFloat
-    let onAskAboutPlant: (String) -> Void
-    let onRequestPaywall: () -> Void
+    let onAskAboutPlant: @Sendable (String) -> Void
+    let onRequestPaywall: @Sendable () -> Void
 
     private var isPremium: Bool { payload.tier == .premium }
 
@@ -164,9 +164,9 @@ private struct HealthScoreCard: View {
                         value: Double(score.overallScore),
                         total: 100,
                         label: "Match",
-                        color: ringColor,
-                        size: 132
+                        color: ringColor
                     )
+                    .frame(width: 132, height: 132)
 
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                         Text("Health match")
@@ -362,7 +362,7 @@ private struct HerbProfileContraindicationRow: View {
 private struct RecipesCarouselCard: View {
     let recipes: [Recipe]
     let isPremium: Bool
-    let onRequestPaywall: () -> Void
+    let onRequestPaywall: @Sendable () -> Void
 
     /// Free tier sees the first recipe + lock CTA; premium sees the full horizontal scroll.
     private var visibleRecipes: [Recipe] {
@@ -435,7 +435,7 @@ private struct RecipeCarouselCard: View {
 
 private struct AskBambooCard: View {
     let plant: Plant
-    let onAskAboutPlant: (String) -> Void
+    let onAskAboutPlant: @Sendable (String) -> Void
 
     var body: some View {
         GlassCard {

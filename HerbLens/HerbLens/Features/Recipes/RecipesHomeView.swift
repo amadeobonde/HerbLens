@@ -129,25 +129,14 @@ struct RecipesHomeView: View {
     }
 
     private var filterChips: some View {
-        HStack(spacing: Theme.Spacing.xs) {
+        Picker("Filter", selection: $filter) {
             ForEach(Filter.allCases, id: \.self) { option in
-                Button {
-                    withAnimation(Theme.Motion.snappy) { filter = option }
-                } label: {
-                    Text(option.title)
-                        .font(Theme.Font.callout)
-                        .fontWeight(filter == option ? .semibold : .regular)
-                        .foregroundStyle(filter == option ? Theme.Color.bone : Theme.Color.forest)
-                        .padding(.horizontal, Theme.Spacing.md)
-                        .padding(.vertical, Theme.Spacing.xs)
-                        .background(filter == option ? Theme.Color.forest : .clear, in: .capsule)
-                        .glass(.capsule)
-                }
-                .buttonStyle(.plain)
+                Text(option.title).tag(option)
             }
-            Spacer(minLength: 0)
         }
+        .pickerStyle(.segmented)
         .padding(.horizontal, Theme.Spacing.md)
+        .padding(.bottom, Theme.Spacing.xs)
     }
 
     private var teasGrid: some View {

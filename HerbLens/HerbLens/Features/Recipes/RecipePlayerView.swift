@@ -205,9 +205,9 @@ struct RecipePlayerView: View {
                     value: Double(timer.totalSeconds - timer.remainingSeconds),
                     total: Double(timer.totalSeconds),
                     label: timer.formatted,
-                    color: timer.state == .completed ? Theme.Color.sage : Theme.Color.forest,
-                    size: 160
+                    color: timer.state == .completed ? Theme.Color.sage : Theme.Color.forest
                 )
+                .frame(width: 160, height: 160)
 
                 HStack(spacing: Theme.Spacing.sm) {
                     timerStartPauseButton(timer: timer)

@@ -28,6 +28,8 @@ public struct HomeView: View {
                     switch route {
                     case .plant(let id):
                         PendingPlantDetailDestination(plantID: id)
+                    case .collection(let collection, let plants):
+                        CollectionDetailView(collection: collection, plants: plants)
                     }
                 }
         }
@@ -123,19 +125,29 @@ public struct HomeView: View {
                 if data.tier == .premium && !data.premiumCollections.isEmpty {
                     CuratedForYouSection(
                         collections: data.premiumCollections,
-                        plantsByID: collectionLookup(data: data)
-                    ) { plant in
-                        path.append(.plant(id: plant.id))
-                    }
+                        plantsByID: collectionLookup(data: data),
+                        onSelect: { plant in
+                            path.append(.plant(id: plant.id))
+                        },
+                        onSelectCollection: { collection in
+                            let plants = collectionPlants(collection, lookup: collectionLookup(data: data))
+                            path.append(.collection(collection: collection, plants: plants))
+                        }
+                    )
                 }
 
                 ForEach(data.freeCollections) { collection in
+                    let plants = collectionPlants(collection, lookup: collectionLookup(data: data))
                     HomeHighlightCollectionRow(
                         collection: collection,
-                        plants: collectionPlants(collection, lookup: collectionLookup(data: data))
-                    ) { plant in
-                        path.append(.plant(id: plant.id))
-                    }
+                        plants: plants,
+                        onSelect: { plant in
+                            path.append(.plant(id: plant.id))
+                        },
+                        onSelectCollection: { collection in
+                            path.append(.collection(collection: collection, plants: plants))
+                        }
+                    )
                 }
 
                 Color.clear.frame(height: Theme.Spacing.xl)

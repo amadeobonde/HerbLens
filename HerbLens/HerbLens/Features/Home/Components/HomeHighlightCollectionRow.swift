@@ -11,20 +11,31 @@ struct HomeHighlightCollectionRow: View {
     let collection: HighlightCollection
     let plants: [Plant]
     let onSelect: (Plant) -> Void
+    let onSelectCollection: (HighlightCollection) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            SectionHeader(collection.title) {
-                HomeCollectionCoverProvider.image(for: collection)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 40, height: 40)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous)
-                            .stroke(Theme.Color.sage.opacity(0.25), lineWidth: 0.5)
-                    )
+            Button {
+                onSelectCollection(collection)
+            } label: {
+                HStack {
+                    SectionHeader(collection.title) {
+                        HomeCollectionCoverProvider.image(for: collection)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 40, height: 40)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Theme.Radius.xs, style: .continuous)
+                                    .stroke(Theme.Color.sage.opacity(0.25), lineWidth: 0.5)
+                            )
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(Theme.Color.textSecondary)
+                }
             }
+            .buttonStyle(.plain)
 
             Text(collection.subtitle)
                 .font(Theme.Font.caption)

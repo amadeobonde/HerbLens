@@ -5,4 +5,5 @@ import Foundation
 /// doesn't re-encode nested recipes/warnings on every push.
 public nonisolated enum HomeRoute: Hashable, Sendable {
     case plant(id: String)
+    case collection(collection: HighlightCollection, plants: [Plant])
 }
